@@ -6,3 +6,7 @@ dep ensure
 
 go install
 ```
+
+# Configuration
+
+limactl can be configured via commandline parameters or via config file in $HOME/.liimactl/config.

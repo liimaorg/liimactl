@@ -3,20 +3,23 @@ package deployment
 import (
 	"fmt"
 
+	"github.com/liimaorg/liimactl/cmd"
 	"github.com/spf13/cobra"
 )
 
-func newGetCommand() *cobra.Command {
+func newGetCommand(cli *cmd.Cli) *cobra.Command {
 	var getCmd = &cobra.Command{
 		Use:   "get",
 		Short: "Get deployments",
-		Run:   runGet,
+		Run: func(cmd *cobra.Command, args []string) {
+			runGet(cli, args)
+		},
 	}
 
 	return getCmd
 }
 
-func runGet(cmd *cobra.Command, args []string) {
+func runGet(cli *cmd.Cli, args []string) {
 	// TODO: Work your own magic here
-	fmt.Println("get called")
+	fmt.Printf("get called, client: %+v", cli.Client)
 }
