@@ -4,9 +4,13 @@ Package client is a Go client for the Liima API.
 package client
 
 import (
+	"bytes"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"time"
@@ -99,4 +103,47 @@ func newTLSClientConfig(config *Config) (*tls.Config, error) {
 	tlsConfig.BuildNameToCertificate()
 
 	return tlsConfig, nil
+}
+
+//DoRequest set up a json for the given url and calls the llima client.
+//Method: http.MethodX
+//URL: Resturl
+//The bodyType will be marshaled to the rest body, depending the method
+//The result will be unmarshaled to the responseType
+func (c *Client) DoRequest(method string, url string, bodyType interface{}, responseType interface{}) error {
+
+	//Setup body if MethodPost
+	bData := []byte{}
+	if method == http.MethodPost {
+		bData, err := json.Marshal(bodyType)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_ = bData
+	}
+
+	var bodydata = bytes.NewBuffer(bData)
+
+	//Setup request with format "application/json"
+	//ToDo: validate config.host (ending slash)
+	reqURL := fmt.Sprintf(c.config.Host + url)
+	req, err := http.NewRequest(method, reqURL, bodydata)
+	req.Header.Set("Accept", "application/json")
+
+	// Do request
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Dump response
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	//Unmarshal json respond to responseType
+	return json.Unmarshal(data, responseType)
+
 }
