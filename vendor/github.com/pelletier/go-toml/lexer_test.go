@@ -1,6 +1,7 @@
 package toml
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -56,7 +57,7 @@ func TestNestedQuotedUnicodeKeyGroup(t *testing.T) {
 func TestUnclosedKeyGroup(t *testing.T) {
 	testFlow(t, "[hello world", []token{
 		{Position{1, 1}, tokenLeftBracket, "["},
-		{Position{1, 2}, tokenError, "unclosed key group"},
+		{Position{1, 2}, tokenError, "unclosed table key"},
 	})
 }
 
@@ -261,6 +262,24 @@ func TestMultilineArrayComments(t *testing.T) {
 		{Position{3, 2}, tokenComma, ","},
 		{Position{4, 1}, tokenRightBracket, "]"},
 		{Position{4, 2}, tokenEOF, ""},
+	})
+}
+
+func TestNestedArraysComment(t *testing.T) {
+	toml := `
+someArray = [
+# does not work
+["entry1"]
+]`
+	testFlow(t, toml, []token{
+		{Position{2, 1}, tokenKey, "someArray"},
+		{Position{2, 11}, tokenEqual, "="},
+		{Position{2, 13}, tokenLeftBracket, "["},
+		{Position{4, 1}, tokenLeftBracket, "["},
+		{Position{4, 3}, tokenString, "entry1"},
+		{Position{4, 10}, tokenRightBracket, "]"},
+		{Position{5, 1}, tokenRightBracket, "]"},
+		{Position{5, 2}, tokenEOF, ""},
 	})
 }
 
@@ -513,6 +532,30 @@ func TestKeyEqualStringUnicodeEscape(t *testing.T) {
 		{Position{1, 8}, tokenString, "hello δ"},
 		{Position{1, 25}, tokenEOF, ""},
 	})
+	testFlow(t, `foo = "\uabcd"`, []token{
+		{Position{1, 1}, tokenKey, "foo"},
+		{Position{1, 5}, tokenEqual, "="},
+		{Position{1, 8}, tokenString, "\uabcd"},
+		{Position{1, 15}, tokenEOF, ""},
+	})
+	testFlow(t, `foo = "\uABCD"`, []token{
+		{Position{1, 1}, tokenKey, "foo"},
+		{Position{1, 5}, tokenEqual, "="},
+		{Position{1, 8}, tokenString, "\uABCD"},
+		{Position{1, 15}, tokenEOF, ""},
+	})
+	testFlow(t, `foo = "\U000bcdef"`, []token{
+		{Position{1, 1}, tokenKey, "foo"},
+		{Position{1, 5}, tokenEqual, "="},
+		{Position{1, 8}, tokenString, "\U000bcdef"},
+		{Position{1, 19}, tokenEOF, ""},
+	})
+	testFlow(t, `foo = "\U000BCDEF"`, []token{
+		{Position{1, 1}, tokenKey, "foo"},
+		{Position{1, 5}, tokenEqual, "="},
+		{Position{1, 8}, tokenString, "\U000BCDEF"},
+		{Position{1, 19}, tokenEOF, ""},
+	})
 	testFlow(t, `foo = "\u2"`, []token{
 		{Position{1, 1}, tokenKey, "foo"},
 		{Position{1, 5}, tokenEqual, "="},
@@ -705,4 +748,32 @@ func TestLexUnknownRvalue(t *testing.T) {
 		{Position{1, 3}, tokenEqual, "="},
 		{Position{1, 5}, tokenError, `no value can start with \`},
 	})
+}
+
+func BenchmarkLexer(b *testing.B) {
+	sample := `title = "Hugo: A Fast and Flexible Website Generator"
+baseurl = "http://gohugo.io/"
+MetaDataFormat = "yaml"
+pluralizeListTitles = false
+
+[params]
+  description = "Documentation of Hugo, a fast and flexible static site generator built with love by spf13, bep and friends in Go"
+  author = "Steve Francia (spf13) and friends"
+  release = "0.22-DEV"
+
+[[menu.main]]
+	name = "Download Hugo"
+	pre = "<i class='fa fa-download'></i>"
+	url = "https://github.com/spf13/hugo/releases"
+	weight = -200
+`
+	rd := strings.NewReader(sample)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rd.Seek(0, os.SEEK_SET)
+		ch := lexToml(rd)
+		for _ = range ch {
+		}
+	}
 }
