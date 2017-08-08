@@ -2,24 +2,11 @@ package hostname
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 	"sort"
 
-	"github.com/liimaorg/liimactl/cmd"
-	"github.com/liimaorg/liimactl/cmd/util"
+	"github.com/liimaorg/liimactl/client"
 	"github.com/spf13/cobra"
 )
-
-//CommandOptions used for the command options (flags)
-type CommandOptions struct {
-	AppServer    []string `json:"appServer"`
-	Runtime      []string `json:"runtime"`
-	Environment  []string `json:"environment"`
-	Host         []string `json:"host"`
-	Node         []string `json:"node"`
-	DisableMerge bool     `json:"disableMerge"`
-}
 
 var (
 	//Long command description
@@ -32,11 +19,11 @@ var (
     liimactl.exe hostname get --appServer=test_application --envrionment=I`)
 
 	//Flags of the command
-	commandOptions CommandOptions
+	commandOptions client.CommandOptions
 )
 
 //newGetCommand is a command to get hostnames
-func newGetCommand(cli *cmd.Cli) *cobra.Command {
+func newGetCommand(cli *client.Cli) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:     "get [flags] ",
@@ -59,28 +46,21 @@ func newGetCommand(cli *cmd.Cli) *cobra.Command {
 }
 
 //Get the hostnames properties given by the arguments (see type Hostnames) and print it on the console
-func runGet(cmd *cobra.Command, cli *cmd.Cli, args []string) {
+func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 
-	//Build URL
-	url := fmt.Sprintf("resources/./hostNames?")
-	url += util.BuildCommandURL(&commandOptions)
-
-	//Call rest client
-	hostnames := Hostnames{}
-	if err := cli.Client.DoRequest(http.MethodGet, url, nil, &hostnames); err != nil {
-		log.Fatal("Error rest call: ", err)
-	}
+	//Get hostnames
+	hostnames := client.GetHostname(cli, &commandOptions)
 
 	//Print result
 	sort.Sort(hostnames)
 	for _, hostname := range hostnames {
-		fmt.Printf("%s ", hostname.AppServer)
-		fmt.Printf("%s ", hostname.Environment)
-		fmt.Printf("%s ", hostname.Host)
-		fmt.Printf("%s ", hostname.Runtime)
-		fmt.Printf("%s ", hostname.Node)
-		fmt.Printf("%s ", hostname.NodeRelease)
-		fmt.Println(hostname.Domain)
+		cmd.Printf("%s ", hostname.AppServer)
+		cmd.Printf("%s ", hostname.Environment)
+		cmd.Printf("%s ", hostname.Host)
+		cmd.Printf("%s ", hostname.Runtime)
+		cmd.Printf("%s ", hostname.Node)
+		cmd.Printf("%s ", hostname.NodeRelease)
+		cmd.Println(hostname.Domain)
 	}
 
 }

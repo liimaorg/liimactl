@@ -1,88 +1,77 @@
 package main
 
-import (
-	"fmt"
-	"os"
+import "github.com/liimaorg/liimactl/cmd"
 
-	"github.com/liimaorg/liimactl/client"
-	"github.com/liimaorg/liimactl/cmd"
-	"github.com/liimaorg/liimactl/cmd/deployment"
-	"github.com/liimaorg/liimactl/cmd/hostname"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
-)
-
-var cfgFile string
+// var cfgFile string
 
 func main() {
-	Execute()
+	cmd.Execute()
 }
 
-// Execute adds all child commands to the root command sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
+// // Execute adds all child commands to the root command sets flags appropriately.
+// // This is called by main.main(). It only needs to happen once to the rootCmd.
+// func Execute() {
 
-	rootCmd := newRootCmd()
+// 	rootCmd := newRootCmd()
 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-	}
-}
+// 	if err := rootCmd.Execute(); err != nil {
+// 		fmt.Println(err)
+// 		os.Exit(-1)
+// 	}
+// }
 
-// newRootCmd represents the base command when called without any subcommands
-func newRootCmd() *cobra.Command {
-	var flags *pflag.FlagSet
-	liimacli := &cmd.Cli{}
+// // newRootCmd represents the base command when called without any subcommands
+// func newRootCmd() *cobra.Command {
+// 	var flags *pflag.FlagSet
+// 	liimacli := &client.Cli{}
 
-	var rootCmd = &cobra.Command{
-		Use:   "liimactl",
-		Short: "Comandline tool for liima",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			config, err := initConfig(flags)
-			if err != nil {
-				return err
-			}
-			liimacli.Client, err = client.NewClient(config)
-			return err
-		},
-	}
+// 	var rootCmd = &cobra.Command{
+// 		Use:   "liimactl",
+// 		Short: "Comandline tool for liima",
+// 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+// 			config, err := initConfig(flags)
+// 			if err != nil {
+// 				return err
+// 			}
+// 			liimacli.Client, err = client.NewClient(config)
+// 			return err
+// 		},
+// 	}
 
-	// Global flags
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.liimactl/config.yaml)")
-	rootCmd.PersistentFlags().String("host", "", "liima host")
-	flags = rootCmd.Flags()
-	rootCmd.AddCommand(deployment.NewDeploymentCmd(liimacli))
-	rootCmd.AddCommand(hostname.NewHostnameCmd(liimacli))
+// 	// Global flags
+// 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.liimactl/config.yaml)")
+// 	rootCmd.PersistentFlags().String("host", "", "liima host")
+// 	flags = rootCmd.Flags()
+// 	rootCmd.AddCommand(deployment.NewDeploymentCmd(liimacli))
+// 	rootCmd.AddCommand(hostname.NewHostnameCmd(liimacli))
 
-	return rootCmd
-}
+// 	return rootCmd
+// }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig(flags *pflag.FlagSet) (*client.Config, error) {
+// // initConfig reads in config file and ENV variables if set.
+// func initConfig(flags *pflag.FlagSet) (*client.Config, error) {
 
-	var config client.Config
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	}
+// 	var config client.Config
+// 	if cfgFile != "" {
+// 		viper.SetConfigFile(cfgFile)
+// 	}
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.liimactl")
-	viper.SetEnvPrefix("LIIMA")
-	viper.BindEnv("HOST")
-	viper.BindPFlag("host", flags.Lookup("host"))
+// 	viper.SetConfigName("config")
+// 	viper.SetConfigType("yaml")
+// 	viper.AddConfigPath("$HOME/.liimactl")
+// 	viper.SetEnvPrefix("LIIMA")
+// 	viper.BindEnv("HOST")
+// 	viper.BindPFlag("host", flags.Lookup("host"))
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
+// 	// If a config file is found, read it in.
+// 	if err := viper.ReadInConfig(); err == nil {
+// 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+// 	}
 
-	err := viper.Unmarshal(&config)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode into config, %v", err)
-	}
+// 	err := viper.Unmarshal(&config)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("unable to decode into config, %v", err)
+// 	}
 
-	return &config, nil
-}
+// 	return &config, nil
+// }

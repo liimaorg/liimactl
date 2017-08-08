@@ -1,12 +1,12 @@
 package deployment
 
 import (
-	"github.com/liimaorg/liimactl/cmd"
+	"github.com/liimaorg/liimactl/client"
 	"github.com/spf13/cobra"
 )
 
 // NewDeploymentCmd represents the deployment command
-func NewDeploymentCmd(cli *cmd.Cli) *cobra.Command {
+func NewDeploymentCmd(cli *client.Cli) *cobra.Command {
 
 	var DeploymentCmd = &cobra.Command{
 		Use:   "deployment COMMAND",

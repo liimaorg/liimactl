@@ -123,6 +123,7 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	}
 
 	var bodydata = bytes.NewBuffer(bData)
+	fmt.Println(bodydata)
 
 	//Setup request with format "application/json"
 	//ToDo: validate config.host (ending slash)
