@@ -2,10 +2,6 @@ package hostname
 
 import (
 	"bytes"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"fmt"
@@ -14,32 +10,20 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func TestX(t *testing.T) {
-
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello, client")
-
-	}))
-	defer ts.Close()
-
-	fmt.Println(ts.URL)
-
-	res, err := http.Get(ts.URL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	greeting, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%s", greeting)
-
-}
-
+//Tests the command "hostname get"
 func TestNewHostnameCmd(t *testing.T) {
 
+	//Tests
+	tests := []struct {
+		name string   //Name of the test
+		args []string //Arguments
+		want string   //Wanted testresult
+	}{
+		{"Test1", []string{"get", "--appServer=testApp"}, "testApp "},
+		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "testApp2 T "},
+	}
+
+	//Init config
 	var flags *pflag.FlagSet
 	liimacli := &client.Cli{}
 	config, err := initConfig(flags)
@@ -47,24 +31,36 @@ func TestNewHostnameCmd(t *testing.T) {
 		fmt.Println(err)
 	}
 
+	//Create mock client
 	liimacli.Client, err = client.NewMockClient(config)
 
-	fmt.Println(config.Host)
+	//Run tests
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-	cmd := NewHostnameCmd(liimacli)
+			//Create command
+			cmd := NewHostnameCmd(liimacli)
 
-	buf := new(bytes.Buffer)
-	cmd.SetOutput(buf)
-	cmd.SetArgs([]string{"get", "--appServer=testApp"})
+			//Set commands output to buffer
+			buf := new(bytes.Buffer)
+			cmd.SetOutput(buf)
 
-	err = cmd.Execute()
-	if err != nil {
-		t.Errorf("Execute() failed with %v", err)
+			//Set test arguments
+			cmd.SetArgs(tt.args)
+
+			//Execute command
+			err = cmd.Execute()
+			if err != nil {
+				t.Errorf("Execute() failed with %v", err)
+			}
+			//Check result
+			if got := buf.String(); got != tt.want {
+				t.Errorf("Commands-Output = %v, want %v", got, tt.want)
+			}
+
+		})
 	}
 
-	fmt.Println("----")
-	fmt.Println(buf.String())
-	fmt.Println("----")
 }
 
 // initConfig reads in config file and ENV variables if set.

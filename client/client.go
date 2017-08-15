@@ -134,6 +134,7 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	// Do request
 	resp, err := c.client.Do(req)
 	if err != nil {
+		fmt.Println("Error http request: ", reqURL)
 		return err
 	}
 	defer resp.Body.Close()

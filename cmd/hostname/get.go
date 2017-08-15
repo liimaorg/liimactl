@@ -16,10 +16,10 @@ var (
 	//Example command description
 	hostnameExample = fmt.Sprintf(` 
     # Get a hostname with specific filter. 
-    liimactl.exe hostname get --appServer=test_application --envrionment=I`)
+    liimactl.exe hostname get --appServer=test_application --environment=I`)
 
 	//Flags of the command
-	commandOptions client.CommandOptions
+	commandOptions client.CommandOptionsHostName
 )
 
 //newGetCommand is a command to get hostnames
@@ -54,13 +54,27 @@ func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 	//Print result
 	sort.Sort(hostnames)
 	for _, hostname := range hostnames {
-		cmd.Printf("%s ", hostname.AppServer)
-		cmd.Printf("%s ", hostname.Environment)
-		cmd.Printf("%s ", hostname.Host)
-		cmd.Printf("%s ", hostname.Runtime)
-		cmd.Printf("%s ", hostname.Node)
-		cmd.Printf("%s ", hostname.NodeRelease)
-		cmd.Println(hostname.Domain)
+		if hostname.AppServer != "" {
+			cmd.Printf("%s ", hostname.AppServer)
+		}
+		if hostname.Environment != "" {
+			cmd.Printf("%s ", hostname.Environment)
+		}
+		if hostname.Host != "" {
+			cmd.Printf("%s ", hostname.Host)
+		}
+		if hostname.Runtime != "" {
+			cmd.Printf("%s ", hostname.Runtime)
+		}
+		if hostname.Node != "" {
+			cmd.Printf("%s ", hostname.Node)
+		}
+		if hostname.NodeRelease != "" {
+			cmd.Printf("%s ", hostname.NodeRelease)
+		}
+		if hostname.Domain != "" {
+			cmd.Println(hostname.Domain)
+		}
 	}
 
 }

@@ -34,8 +34,8 @@ func (slice Hostnames) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
 }
 
-//CommandOptions used for the command options (flags)
-type CommandOptions struct {
+//CommandOptionsHostName used for the command options (flags)
+type CommandOptionsHostName struct {
 	AppServer    []string `json:"appServer"`
 	Runtime      []string `json:"runtime"`
 	Environment  []string `json:"environment"`
@@ -45,7 +45,7 @@ type CommandOptions struct {
 }
 
 //GetHostname return the hostnames from the client
-func GetHostname(cli *Cli, commandOptions *CommandOptions) Hostnames {
+func GetHostname(cli *Cli, commandOptions *CommandOptionsHostName) Hostnames {
 
 	//Build URL
 	url := fmt.Sprintf("resources/./hostNames?")
