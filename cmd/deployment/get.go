@@ -20,7 +20,7 @@ var (
     liimactl.exe deployment get --appServer=test_application --environment=I`)
 
 	//Flags of the command
-	commandOptions client.CommandOptionsDeployment
+	commandOptionsGet client.CommandOptionsGetDeployment
 )
 
 //newGetCommand is a command to get deployments
@@ -35,20 +35,12 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&commandOptions.AppName, "appName", "", []string{}, "Application Name")
-	cmd.Flags().StringSliceVarP(&commandOptions.AppServer, "appServer", "", []string{}, "Application Server Name")
-	cmd.Flags().StringSliceVarP(&commandOptions.DeploymentState, "deploymentState", "", []string{}, "Deplyoment State")
-	cmd.Flags().StringSliceVarP(&commandOptions.Environment, "environment", "", []string{}, "	Environment Filter")
-	cmd.Flags().BoolVarP(&commandOptions.OnlyLatest, "onlyLatest", "", false, "only Latest Filter")
-
-	//CommandOptionsDeployment used for the command options (flags)
-	type CommandOptionsDeployment struct {
-		AppName         []string `json:"appName"`
-		AppServer       []string `json:"appServerName"`
-		DeploymentState []string `json:"deploymentState"`
-		Environment     []string `json:"environmentName"`
-		OnlyLatest      bool     `json:"onlyLatest"`
-	}
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppName, "appName", "", []string{}, "Application Name")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppServer, "appServer", "", []string{}, "Application Server Name")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.DeploymentState, "deploymentState", "", []string{}, "Deplyoment State")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.Environment, "environment", "", []string{}, "	Environment Filter")
+	cmd.Flags().BoolVarP(&commandOptionsGet.OnlyLatest, "onlyLatest", "", false, "only Latest Filter")
+	cmd.Flags().IntVarP(&commandOptionsGet.TrackingID, "trackingId", "", -1, "Tracking ID")
 
 	return cmd
 }
@@ -56,22 +48,22 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 //Get the deployments properties given by the arguments (see type Deplyoments) and print it on the console
 func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 
-	//Get deplyoments
-	deplyoments := client.GetDeployment(cli, &commandOptions)
+	//Get deployments
+	deployments := client.GetDeployment(cli, &commandOptionsGet)
 
 	const createdFormat = "2017-07-06 21:00" //"Jan 2, 2006 at 3:04pm (MST)"
 
 	//Print result
-	sort.Sort(deplyoments)
-	for _, deplyoment := range deplyoments {
+	sort.Sort(deployments)
+	for _, deployment := range deployments {
 		cmd.Println("------")
-		cmd.Printf("%s ", deplyoment.AppServerName)
-		cmd.Printf("%s ", deplyoment.EnvironmentName)
-		cmd.Printf("%s ", deplyoment.ReleaseName)
-		cmd.Printf("%s ", time.Unix(0, deplyoment.DeploymentDate*int64(time.Millisecond)).Format("2006-01-02T15:04"))
-		cmd.Println(deplyoment.State)
+		cmd.Printf("%s ", deployment.AppServerName)
+		cmd.Printf("%s ", deployment.EnvironmentName)
+		cmd.Printf("%s ", deployment.ReleaseName)
+		cmd.Printf("%s ", time.Unix(0, deployment.DeploymentDate*int64(time.Millisecond)).Format("2006-01-02T15:04"))
+		cmd.Println(deployment.State)
 
-		for _, appsWithVersion := range deplyoment.AppsWithVersion {
+		for _, appsWithVersion := range deployment.AppsWithVersion {
 			cmd.Printf("%s ", appsWithVersion.ApplicationName)
 			cmd.Println(appsWithVersion.Version)
 		}

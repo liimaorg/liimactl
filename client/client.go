@@ -115,26 +115,30 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	//Setup body if MethodPost
 	bData := []byte{}
 	if method == http.MethodPost {
-		bData, err := json.Marshal(bodyType)
+		bDataloc, err := json.Marshal(bodyType)
 		if err != nil {
 			log.Fatal(err)
 		}
-		_ = bData
+		bData = bDataloc
 	}
 
 	var bodydata = bytes.NewBuffer(bData)
-	fmt.Println(bodydata)
 
 	//Setup request with format "application/json"
 	//ToDo: validate config.host (ending slash)
 	reqURL := fmt.Sprintf(c.config.Host + url)
 	req, err := http.NewRequest(method, reqURL, bodydata)
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	// Do request
 	resp, err := c.client.Do(req)
 	if err != nil {
 		fmt.Println("Error http request: ", reqURL)
+		if resp != nil {
+			fmt.Println("response Status:", resp.Status)
+			fmt.Println("response Headers:", resp.Header)
+		}
 		return err
 	}
 	defer resp.Body.Close()
@@ -142,6 +146,9 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	// Dump response
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Println("Response Body Error on request: ", reqURL)
+		fmt.Println("response Status:", resp.Status)
+		fmt.Println("response Headers:", resp.Header)
 		return err
 	}
 
