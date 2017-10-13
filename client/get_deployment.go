@@ -61,11 +61,7 @@ type DeplyomentResponse struct {
 	ConfirmUser          string        `json:"confirmUser"`
 	CancelUser           interface{}   `json:"cancelUser"`
 	NodeJobs             []interface{} `json:"nodeJobs"`
-	AppsWithMvnVersion   []struct {
-		ApplicationName string `json:"applicationName"`
-		MavenVersion    string `json:"mavenVersion"`
-	} `json:"appsWithMvnVersion"`
-	CancleUser interface{} `json:"cancleUser"`
+	CancleUser           interface{}   `json:"cancleUser"`
 }
 
 //sort.Interface

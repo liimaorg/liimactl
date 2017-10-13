@@ -105,6 +105,7 @@ type CommandOptionsCreateDeployment struct {
 	Key                  []string `json:"key"`
 	Value                []string `json:"value"`
 	Wait                 bool     //Wait success or failed
+	FromEnvironment      string   //Deploy last deplyoment from given environment
 }
 
 //Validate the given command options
@@ -114,11 +115,16 @@ func (commandOption *CommandOptionsCreateDeployment) validate() error {
 	var errorList []string
 	//Checks and add to errorList if an error
 	util.Check(&errorList, commandOption.AppServer != "", "want appServer")
-	util.Check(&errorList, len(commandOption.AppName) == len(commandOption.AppVersion), "want same count of appName and appVersion, got appName %d != appVersion %d", len(commandOption.AppName), len(commandOption.AppVersion))
 	util.Check(&errorList, len(commandOption.Key) == len(commandOption.Value), "want same count of key and value, got key %d != value %d", len(commandOption.Key), len(commandOption.Value))
-	util.Check(&errorList, len(commandOption.AppName) > 0, "want appName")
-	util.Check(&errorList, len(commandOption.AppVersion) > 0, "want appVersion")
 	util.Check(&errorList, util.ValidateSingleChar(commandOption.Environment), "want environment with one char, got %s", commandOption.Environment)
+	//Copy from environment, don't check AppName and AppVersion
+	if commandOption.FromEnvironment != "" {
+		util.Check(&errorList, util.ValidateSingleChar(commandOption.FromEnvironment), "want FromEnvironment with one char, got %s", commandOption.FromEnvironment)
+	} else {
+		util.Check(&errorList, len(commandOption.AppName) > 0, "want appName")
+		util.Check(&errorList, len(commandOption.AppVersion) > 0, "want appVersion")
+		util.Check(&errorList, len(commandOption.AppName) == len(commandOption.AppVersion), "want same count of appName and appVersion, got appName %d != appVersion %d", len(commandOption.AppName), len(commandOption.AppVersion))
+	}
 	//Return all errors as one
 	if len(errorList) > 0 {
 		return errors.New(strings.Join(errorList, ", "))
@@ -127,10 +133,11 @@ func (commandOption *CommandOptionsCreateDeployment) validate() error {
 }
 
 //CreateDeployment create a deployment and returns the deploymentresponse from the client
-func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) DeplyomentResponse {
+func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (DeplyomentResponse, error) {
 
 	if err := commandOptions.validate(); err != nil {
-		log.Fatal("Error command validation: ", err)
+		//log.Fatal("Error command validation: ", err)
+		return DeplyomentResponse{}, err
 	}
 
 	//Build URL
@@ -147,13 +154,37 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	deploymentRequest.DeploymentDate = commandOptions.DeploymentDate
 	deploymentRequest.ExecuteShakedownTest = commandOptions.ExecuteShakedownTest
 
-	//Application
-	for i := 0; i < len(commandOptions.AppName); i++ {
-		appVersion := appsWithVersion{
-			ApplicationName: commandOptions.AppName[i],
-			Version:         commandOptions.AppVersion[i],
+	//Get application and version from last deployment of given "from environment"
+	if commandOptions.FromEnvironment != "" {
+
+		commandOptionsGet := CommandOptionsGetDeployment{}
+		commandOptionsGet.Environment = []string{commandOptions.FromEnvironment}
+		commandOptionsGet.AppServer = []string{commandOptions.AppServer}
+		commandOptionsGet.TrackingID = -1
+		commandOptionsGet.OnlyLatest = true
+		//Get last deployment
+		deployments := GetDeployment(cli, &commandOptionsGet)
+		if len(deployments) == 0 {
+			log.Fatal("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
 		}
-		deploymentRequest.AppsWithVersion = append(deploymentRequest.AppsWithVersion, appVersion)
+		lastDeployment := deployments[0]
+		//Set app and version
+		for i := 0; i < len(lastDeployment.AppsWithVersion); i++ {
+			appVersion := appsWithVersion{
+				ApplicationName: lastDeployment.AppsWithVersion[i].ApplicationName,
+				Version:         lastDeployment.AppsWithVersion[i].Version,
+			}
+			deploymentRequest.AppsWithVersion = append(deploymentRequest.AppsWithVersion, appVersion)
+		}
+	} else {
+		//Application and version
+		for i := 0; i < len(commandOptions.AppName); i++ {
+			appVersion := appsWithVersion{
+				ApplicationName: commandOptions.AppName[i],
+				Version:         commandOptions.AppVersion[i],
+			}
+			deploymentRequest.AppsWithVersion = append(deploymentRequest.AppsWithVersion, appVersion)
+		}
 	}
 	//Deployment parameter
 	for i := 0; i < len(commandOptions.Key); i++ {
@@ -202,5 +233,5 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	}
 
 	//Return response
-	return deploymentResponse
+	return deploymentResponse, nil
 }

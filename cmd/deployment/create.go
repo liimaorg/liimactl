@@ -19,7 +19,7 @@ var (
     # Create a deplyoment with specific properties. 
 	liimactl.exe deployment create --appServer=test_application --appName=ch_mobi_app1 --version="1.0.0" --appName=ch_mobi_app2 --version="1.0.1" --environment=I
 	liimactl.exe deployment create --appServer=aps_bau --appName=ch_mobi_aps_bau --version="1.0.32" --environment=W --date="22.08.2017 17:00"
-	liimactl.exe deployment create --appName=ch_mobi_generic_test --appServer=generic_test --version="1.0.1" --environment=U --wait`)
+	liimactl.exe deployment create --appServer=generic_test --appName=ch_mobi_generic_test --version="1.0.1" --environment=U --wait`)
 
 	//Flags of the command
 	commandOptionsCreate client.CommandOptionsCreateDeployment
@@ -47,6 +47,7 @@ func newCreateCommand(cli *client.Cli) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Key, "key", "", []string{}, "Deploymentparameter Key")
 	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Value, "value", "", []string{}, "Deploymentparameter Value")
 	cmd.Flags().BoolVarP(&commandOptionsCreate.Wait, "wait", "", false, "Wait until the deplyoment success or failed")
+	cmd.Flags().StringVarP(&commandOptionsCreate.FromEnvironment, "fromEnvironment", "", "", "Deploy last deplyoment from given environment")
 
 	return cmd
 }
@@ -55,7 +56,10 @@ func newCreateCommand(cli *client.Cli) *cobra.Command {
 func runCreate(cmd *cobra.Command, cli *client.Cli, args []string) {
 
 	//Create deplyoment
-	deplyoment := client.CreateDeployment(cli, &commandOptionsCreate)
+	deplyoment, err := client.CreateDeployment(cli, &commandOptionsCreate)
+	if err != nil {
+		log.Fatal("Error Create Deployment: ", err)
+	}
 
 	//Print result
 	if deplyoment.AppServerName != "" {
@@ -80,7 +84,7 @@ func runCreate(cmd *cobra.Command, cli *client.Cli, args []string) {
 
 	//Write error failed -> return code = 1 with log.Fatal
 	if deplyoment.State == client.DeploymentStateFailed {
-		log.Fatal("Deployment failed")
+		log.Fatal("Deployment failed with state: ", deplyoment.State)
 	}
 
 }

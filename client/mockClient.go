@@ -42,16 +42,58 @@ func NewMockClient(config *Config) (*Client, error) {
 func serverMuxHandler() *http.ServeMux {
 	r := http.NewServeMux()
 
-	//ToDo: Deployment test handler
-	//r.HandleFunc("/deplyoments", createDeploymentHandler).Methods("POST")
-
-	//Get Deployment test handler
-	r.HandleFunc("/resources/deployments", listGetDeploymentHandler)
+	// Deployment test handler
+	r.HandleFunc("/resources/deployments", listDeploymentHandler)
 
 	//Hostname test handler
 	r.HandleFunc("/resources/hostNames", listHostnameHandler)
 
 	return r
+}
+
+//Deployment test handler
+func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
+
+	//POST (Problem: r.Method is always GET -> Check POST, GET over URL)
+	if r.URL.String() == "/resources/deployments" {
+
+		//Create  response
+		response := Deployments{{}}
+		response[0].State = "SUCCESS"
+
+		//Send response
+		deployment, err := json.Marshal(response[0])
+		if err != nil {
+
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Write(deployment)
+
+		//GET
+	} else {
+		//Create  response
+		response := Deployments{{}}
+
+		//Split the requested Url
+		cuttedURL := strings.Split(r.URL.String(), "?")[1]
+		//Split the subcommands
+		commands := strings.Split(cuttedURL, "&")
+		//Set the requested command-value as respond if a tag exits in the hostename
+		for _, command := range commands {
+			key := strings.Split(command, "=")[0]
+			value := strings.Split(command, "=")[1]
+			util.SetValueIfTagExists(&response[0], key, value)
+		}
+		//Send response
+		deployment, err := json.Marshal(response)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Write(deployment)
+	}
+
 }
 
 //Hostname test handler
@@ -77,31 +119,6 @@ func listHostnameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(hostname)
-}
-
-//Get deployment test handler
-func listGetDeploymentHandler(w http.ResponseWriter, r *http.Request) {
-
-	//Create  response
-	response := Deployments{{}}
-
-	//Split the requested Url
-	cuttedURL := strings.Split(r.URL.String(), "?")[1]
-	//Split the subcommands
-	commands := strings.Split(cuttedURL, "&")
-	//Set the requested command-value as respond if a tag exits in the hostename
-	for _, command := range commands {
-		key := strings.Split(command, "=")[0]
-		value := strings.Split(command, "=")[1]
-		util.SetValueIfTagExists(&response[0], key, value)
-	}
-	//Send response
-	deployment, err := json.Marshal(response)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Write(deployment)
 }
 
 //DoRequest set up a json for the given url and calls the llima client.
