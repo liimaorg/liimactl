@@ -37,17 +37,17 @@ func newCreateCommand(cli *client.Cli) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&commandOptionsCreate.AppServer, "appServer", "", "", "Application Server Name")
-	cmd.Flags().StringSliceVarP(&commandOptionsCreate.AppName, "appName", "", []string{}, "Application Name")
-	cmd.Flags().StringSliceVarP(&commandOptionsCreate.AppVersion, "version", "", []string{}, "Application Version")
-	cmd.Flags().StringVarP(&commandOptionsCreate.Environment, "environment", "", "", "Environment")
-	cmd.Flags().StringVarP(&commandOptionsCreate.Release, "release", "", "", "Release")
-	cmd.Flags().StringVarP(&commandOptionsCreate.DeploymentDate, "date", "", "", "Deployment Date 'DD.MM.YYYY hh:mm' ")
-	cmd.Flags().BoolVarP(&commandOptionsCreate.ExecuteShakedownTest, "executeShakeDownTest", "", false, "Run Shakedowntest after the deplyoment")
-	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Key, "key", "", []string{}, "Deploymentparameter Key")
-	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Value, "value", "", []string{}, "Deploymentparameter Value")
-	cmd.Flags().BoolVarP(&commandOptionsCreate.Wait, "wait", "", false, "Wait until the deplyoment success or failed")
-	cmd.Flags().StringVarP(&commandOptionsCreate.FromEnvironment, "fromEnvironment", "", "", "Deploy last deplyoment from given environment")
+	cmd.Flags().StringVarP(&commandOptionsCreate.AppServer, "appServer", "a", "", "Application Server Name")
+	cmd.Flags().StringSliceVarP(&commandOptionsCreate.AppName, "appName", "n", []string{}, "Application Name")
+	cmd.Flags().StringSliceVarP(&commandOptionsCreate.AppVersion, "version", "v", []string{}, "Application Version")
+	cmd.Flags().StringVarP(&commandOptionsCreate.Environment, "environment", "e", "", "Environment")
+	cmd.Flags().StringVarP(&commandOptionsCreate.Release, "release", "r", "", "Release")
+	cmd.Flags().StringVarP(&commandOptionsCreate.DeploymentDate, "date", "d", "", "Deployment Date 'DD.MM.YYYY hh:mm' ")
+	cmd.Flags().BoolVarP(&commandOptionsCreate.ExecuteShakedownTest, "executeShakeDownTest", "s", false, "Run Shakedowntest after the deplyoment")
+	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Key, "key", "k", []string{}, "Deploymentparameter Key")
+	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Value, "value", "x", []string{}, "Deploymentparameter Value")
+	cmd.Flags().BoolVarP(&commandOptionsCreate.Wait, "wait", "w", false, "Wait until the deplyoment success or failed")
+	cmd.Flags().StringVarP(&commandOptionsCreate.FromEnvironment, "fromEnvironment", "f", "", "Deploy last deplyoment from given environment")
 
 	return cmd
 }

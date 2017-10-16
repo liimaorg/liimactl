@@ -35,12 +35,12 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&commandOptions.AppServer, "appServer", "", []string{}, "Application server name")
-	cmd.Flags().StringSliceVarP(&commandOptions.Runtime, "runtime", "", []string{}, "Runtime name")
-	cmd.Flags().StringSliceVarP(&commandOptions.Environment, "environment", "", []string{}, "Environement name")
-	cmd.Flags().StringSliceVarP(&commandOptions.Host, "host", "", []string{}, "Host name")
-	cmd.Flags().StringSliceVarP(&commandOptions.Node, "node", "", []string{}, "Node name")
-	cmd.Flags().BoolVarP(&commandOptions.DisableMerge, "disableMerge", "", false, "Merge releases")
+	cmd.Flags().StringSliceVarP(&commandOptions.AppServer, "appServer", "a", []string{}, "Application server name")
+	cmd.Flags().StringSliceVarP(&commandOptions.Runtime, "runtime", "r", []string{}, "Runtime name")
+	cmd.Flags().StringSliceVarP(&commandOptions.Environment, "environment", "e", []string{}, "Environement name")
+	cmd.Flags().StringSliceVarP(&commandOptions.Host, "host", "s", []string{}, "Host name")
+	cmd.Flags().StringSliceVarP(&commandOptions.Node, "node", "n", []string{}, "Node name")
+	cmd.Flags().BoolVarP(&commandOptions.DisableMerge, "disableMerge", "d", false, "Merge releases")
 
 	return cmd
 }

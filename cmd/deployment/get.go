@@ -35,12 +35,12 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppName, "appName", "", []string{}, "Application Name")
-	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppServer, "appServer", "", []string{}, "Application Server Name")
-	cmd.Flags().StringSliceVarP(&commandOptionsGet.DeploymentState, "deploymentState", "", []string{}, "Deplyoment State")
-	cmd.Flags().StringSliceVarP(&commandOptionsGet.Environment, "environment", "", []string{}, "	Environment Filter")
-	cmd.Flags().BoolVarP(&commandOptionsGet.OnlyLatest, "onlyLatest", "", false, "only Latest Filter")
-	cmd.Flags().IntVarP(&commandOptionsGet.TrackingID, "trackingId", "", -1, "Tracking ID")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppName, "appName", "n", []string{}, "Application Name")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppServer, "appServer", "a", []string{}, "Application Server Name")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.DeploymentState, "deploymentState", "d", []string{}, "Deplyoment State")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.Environment, "environment", "e", []string{}, "	Environment Filter")
+	cmd.Flags().BoolVarP(&commandOptionsGet.OnlyLatest, "onlyLatest", "l", false, "only Latest Filter")
+	cmd.Flags().IntVarP(&commandOptionsGet.TrackingID, "trackingId", "t", -1, "Tracking ID")
 
 	return cmd
 }
