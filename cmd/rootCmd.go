@@ -64,6 +64,7 @@ func initConfig(flags *pflag.FlagSet) (*client.Config, error) {
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 	viper.AddConfigPath("$HOME/.liimactl")
 	viper.SetEnvPrefix("LIIMA")
 	viper.BindEnv("HOST")

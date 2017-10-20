@@ -131,17 +131,30 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
-	// Do request
-	resp, err := c.client.Do(req)
-	if err != nil {
-		fmt.Println("Error http request: ", reqURL)
-		if resp != nil {
-			fmt.Println("response Status:", resp.Status)
-			fmt.Println("response Headers:", resp.Header)
+	// Do request, retry if fails
+	var resp *http.Response
+	nbrOfRetry := 10
+	for i := 0; i < nbrOfRetry; i++ {
+
+		respond, err := c.client.Do(req)
+		if err != nil {
+			fmt.Println("Error http request: ", reqURL)
+			fmt.Println("ERROR: ", err)
+			if respond != nil {
+				fmt.Println("response Status:", respond.Status)
+				fmt.Println("response Headers:", respond.Header)
+			}
+			//return if max retry reached
+			if i >= (nbrOfRetry - 1) {
+				return err
+			}
+		} else {
+			resp = respond
+			defer respond.Body.Close()
+			break
 		}
-		return err
+
 	}
-	defer resp.Body.Close()
 
 	// Dump response
 	data, err := ioutil.ReadAll(resp.Body)
