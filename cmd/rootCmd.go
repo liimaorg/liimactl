@@ -3,6 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+
+	"log"
 
 	"github.com/liimaorg/liimactl/client"
 	"github.com/liimaorg/liimactl/cmd/deployment"
@@ -62,9 +65,17 @@ func initConfig(flags *pflag.FlagSet) (*client.Config, error) {
 		viper.SetConfigFile(cfgFile)
 	}
 
+	//Get path of executable
+	ex, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	exPath := filepath.Dir(ex)
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath(exPath)
 	viper.AddConfigPath("$HOME/.liimactl")
 	viper.SetEnvPrefix("LIIMA")
 	viper.BindEnv("HOST")
@@ -75,7 +86,7 @@ func initConfig(flags *pflag.FlagSet) (*client.Config, error) {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 
-	err := viper.Unmarshal(&config)
+	err = viper.Unmarshal(&config)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode into config, %v", err)
 	}
