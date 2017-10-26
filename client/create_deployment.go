@@ -18,31 +18,11 @@ type appsWithVersion struct {
 	Version         string `json:"version"`
 }
 
-// func (a *appsWithVersion) MarshalJSON() ([]byte, error) {
-// 	return json.Marshal(&struct {
-// 		ApplicationName string `json:"applicationName"`
-// 		Version         string `json:"version"`
-// 	}{
-// 		ApplicationName: a.ApplicationName,
-// 		Version:         a.Version,
-// 	})
-// }
-
 //deploymentParameters type
 type deploymentParameters struct {
 	Value string `json:"value"`
 	Key   string `json:"key"`
 }
-
-// func (a *deploymentParameters) MarshalJSON() ([]byte, error) {
-// 	return json.Marshal(&struct {
-// 		Value string `json:"value"`
-// 		Key   string `json:"key"`
-// 	}{
-// 		Value: a.Value,
-// 		Key:   a.Key,
-// 	})
-// }
 
 //DeplyomentRequest type
 type DeplyomentRequest struct {
@@ -61,38 +41,6 @@ type DeplyomentRequest struct {
 	NeighbourhoodTest    bool                   `json:"neighbourhoodTest"`
 }
 
-// func (a *DeplyomentRequest) MarshalJSON() ([]byte, error) {
-// 	return json.Marshal(&struct {
-// 		ReleaseName          *string                `json:"releaseName"`
-// 		AppServerName        string                 `json:"appServerName"`
-// 		EnvironmentName      string                 `json:"environmentName"`
-// 		AppsWithVersion      []appsWithVersion      `json:"appsWithVersion"`
-// 		DeploymentParameters []deploymentParameters `json:"deploymentParameters"`
-// 		StateToDeploy        string                 `json:"stateToDeploy"`
-// 		ContextIds           []string               `json:"contextIds"`
-// 		DeploymentDate       string                 `json:"deploymentDate"`
-// 		SendEmail            bool                   `json:"sendEmail"`
-// 		RequestOnly          bool                   `json:"requestOnly"`
-// 		Simulate             bool                   `json:"simulate"`
-// 		ExecuteShakedownTest bool                   `json:"executeShakedownTest"`
-// 		NeighbourhoodTest    bool                   `json:"neighbourhoodTest"`
-// 	}{
-// 		ReleaseName:          a.ReleaseName,
-// 		AppServerName:        a.AppServerName,
-// 		EnvironmentName:      a.EnvironmentName,
-// 		AppsWithVersion:      a.AppsWithVersion,
-// 		DeploymentParameters: a.DeploymentParameters,
-// 		StateToDeploy:        a.StateToDeploy,
-// 		ContextIds:           a.ContextIds,
-// 		DeploymentDate:       a.DeploymentDate,
-// 		SendEmail:            a.SendEmail,
-// 		RequestOnly:          a.RequestOnly,
-// 		Simulate:             a.Simulate,
-// 		ExecuteShakedownTest: a.ExecuteShakedownTest,
-// 		NeighbourhoodTest:    a.NeighbourhoodTest,
-// 	})
-// }
-
 //CommandOptionsCreateDeployment used for the command options (flags)
 type CommandOptionsCreateDeployment struct {
 	AppServer            string   `json:"appServerName"`
@@ -104,7 +52,8 @@ type CommandOptionsCreateDeployment struct {
 	ExecuteShakedownTest bool     `json:"executeShakedownTest"`
 	Key                  []string `json:"key"`
 	Value                []string `json:"value"`
-	Wait                 bool     //Wait success or failed
+	Wait                 bool     //Wait as long the WaitTime until the deplyoment success or failed
+	MaxWaitTime          int      //Max wait time [seconds] until the deplyoment success or failed
 	FromEnvironment      string   //Deploy last deplyoment from given environment
 }
 
@@ -202,13 +151,13 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	}
 
 	//Wait on deplyoment success or failed
-	if commandOptions.Wait {
+	if commandOptions.Wait && commandOptions.MaxWaitTime > 5 {
 		commandOptionsGet := CommandOptionsGetDeployment{
 			TrackingID: deploymentResponse.TrackingID,
 		}
 
-		//Timeout 10min = 10 * 60sec = 600 -> 600sec / 5sec = 120 counts
-		maxCounts := 120
+		//Timeout 10min = 600sec / 5sec = 120 counts
+		maxCounts := commandOptions.MaxWaitTime / 5
 		for i := 0; i < maxCounts; i++ {
 			deployments := GetDeployment(cli, &commandOptionsGet)
 

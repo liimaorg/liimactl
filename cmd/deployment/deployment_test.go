@@ -2,9 +2,8 @@ package deployment
 
 import (
 	"bytes"
-	"testing"
-
 	"fmt"
+	"testing"
 
 	"github.com/liimaorg/liimactl/client"
 	"github.com/spf13/pflag"

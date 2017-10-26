@@ -46,7 +46,8 @@ func newCreateCommand(cli *client.Cli) *cobra.Command {
 	cmd.Flags().BoolVarP(&commandOptionsCreate.ExecuteShakedownTest, "executeShakeDownTest", "s", false, "Run Shakedowntest after the deplyoment")
 	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Key, "key", "k", []string{}, "Deploymentparameter Key")
 	cmd.Flags().StringSliceVarP(&commandOptionsCreate.Value, "value", "x", []string{}, "Deploymentparameter Value")
-	cmd.Flags().BoolVarP(&commandOptionsCreate.Wait, "wait", "w", false, "Wait until the deplyoment success or failed")
+	cmd.Flags().BoolVarP(&commandOptionsCreate.Wait, "wait", "w", false, "Wait maxWaitTime until the deplyoment success or failed")
+	cmd.Flags().IntVarP(&commandOptionsCreate.MaxWaitTime, "maxWaitTime", "t", 600, "Max Wait time [seconds] until the deplyoment success or failed")
 	cmd.Flags().StringVarP(&commandOptionsCreate.FromEnvironment, "fromEnvironment", "f", "", "Deploy last deplyoment from given environment")
 
 	return cmd
