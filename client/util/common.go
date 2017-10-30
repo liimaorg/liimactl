@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -35,6 +36,13 @@ func BuildCommandURL(f interface{}) string {
 			}
 			//remove last comma
 			url = strings.TrimRight(url, ",")
+
+		case reflect.Int:
+			//Default value of the command option is -1, if this command option is not set, don't build the url
+			if valueField.Interface() == -1 {
+				continue
+			}
+			fallthrough
 
 		default:
 			url += fmt.Sprintf("%s=%v", typeField.Tag.Get(TagName), valueField.Interface())
@@ -98,4 +106,19 @@ func SetValueIfTagExists(f interface{}, actTag string, setVal string) {
 
 		}
 	}
+}
+
+//Check can be used for the validation of any expression which returns a boolean (isValid)
+//Example: Check(&myErrorList, x.Y >= 0, "want positive Y, got %d", x.Y)
+func Check(errorList *[]string, isValid bool, errMsg string, args ...interface{}) {
+
+	if !isValid {
+		*errorList = append(*errorList, fmt.Sprintf(errMsg, args...))
+	}
+}
+
+//ValidateSingleChar validates a string if containing only a single char
+func ValidateSingleChar(input string) bool {
+	Re := regexp.MustCompile(`^[a-zA-Z]$`)
+	return Re.MatchString(input)
 }

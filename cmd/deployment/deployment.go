@@ -14,6 +14,7 @@ func NewDeploymentCmd(cli *client.Cli) *cobra.Command {
 	}
 
 	DeploymentCmd.AddCommand(newGetCommand(cli))
+	DeploymentCmd.AddCommand(newCreateCommand(cli))
 
 	return DeploymentCmd
 }
