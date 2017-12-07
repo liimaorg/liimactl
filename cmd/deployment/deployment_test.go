@@ -3,6 +3,7 @@ package deployment
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/liimaorg/liimactl/client"
@@ -18,8 +19,8 @@ func TestNewDeploymentGetCmd(t *testing.T) {
 		args []string //Arguments
 		want string   //Wanted testresult
 	}{
-		{"Test1", []string{"get", "--appServer=testApp"}, "------\ntestApp   1970-01-01T01:00 \n"},
-		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "------\ntestApp2 T  1970-01-01T01:00 \n"},
+		{"Test1", []string{"get", "--appServer=testApp"}, "------\ntestApp"},
+		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "------\ntestApp2 T"},
 	}
 
 	//Init config
@@ -53,7 +54,7 @@ func TestNewDeploymentGetCmd(t *testing.T) {
 				t.Errorf("Execute() failed with %v", err)
 			}
 			//Check result
-			if got := buf.String(); got != tt.want {
+			if got := buf.String(); !strings.HasPrefix(got, tt.want) {
 				t.Errorf("Commands-Output = %v, want %v", got, tt.want)
 			}
 		})
