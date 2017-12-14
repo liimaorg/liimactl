@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/liimaorg/liimactl.svg?branch=master)](https://travis-ci.org/liimaorg/liimactl)
+
 # Install
 
 ```
