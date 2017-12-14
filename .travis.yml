@@ -1,20 +1,22 @@
 sudo: required
 services:
 - docker
+env:
+  global:
+    - DOCKER_CMD="docker run -it --rm -v $PWD:/go/src/github.com/liimaorg/liimactl -w /go/src/github.com/liimaorg/liimactl"
+    - DOCKER_IMG="golang:1.9-alpine"
 install:
-- docker run -it --name liimactl-install -v "$PWD":/go/src/github.com/liimaorg/liimactl -w /go/src/github.com/liimaorg/liimactl -e GOOS=windows -e GOARCH=amd64 golang:1.9 go build -v
+- $DOCKER_CMD -e GOOS=linux   -e GOARCH=amd64 -e CGO_ENABLED=0 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH'
+- $DOCKER_CMD -e GOOS=windows -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH.exe'
+- $DOCKER_CMD -e GOOS=darwin  -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH'
 script:
-- docker run -it --name liimactl-test -v "$PWD":/go/src/github.com/liimaorg/liimactl -w /go/src/github.com/liimaorg/liimactl golang:1.9 go test ./...
-#before_deploy:
-#- docker run -it --name amw-deploy -v "$PWD":/usr/src/amw -v "$PWD/.m2":"/root/.m2" -w /usr/src/amw maven:3-jdk-8 mvn deploy -DskipTests=true -Dmaven.javadoc.skip=true -f AMW_ear -B
-#- ls -l AMW_ear/target/mvn-repo/ch/puzzle/itc/mobiliar/AMW_ear/*/AMW_ear-*.ear
-#- sudo chmod 777 AMW_ear/target/mvn-repo/ch/puzzle/itc/mobiliar/AMW_ear/*/AMW_ear-*.ear
+- $DOCKER_CMD $DOCKER_IMG go test -v ./...
 deploy:
   provider: releases
   api_key:
     secure: aMserxLJT49UCceWT7Ti4E7TXdWGqc0pR/Wjyh7N4OYpFlZE2tx+o7T3LrplMVpKYZy+YlWuXYizeF+uL7swVzLJL8pgVb8j+zI/CNA/UL6QwzXWW8t5Cy6Ob+mcQSeIItimvowgdZ8AAja2hBS8of3xUoESZo6DsCSVS5s8BqSiPu6oV9Ua9yoKnNs2J17FjJ23x8DUAHTTVU84FKqtFVtSI+pTIBnex/b0wVgypeFMciIUIUXrp2flQewZ0pdTAYfCrIG74VNgsTRzs9ikBK5+lr8I8se62zW1m7gOP7ycYU+HJEUrahwe4W+ckfgXv4pK50P5ZsiwfYWEeo6jzKUg5qQubX1GKDoB0+LL/sDYxq/uiQ+7Djs/UIrwsBQ8Xzt/FTQEfANA0CTIyVHv0SyL+nwSJDl4wUSwmkLx76FcZIggh45HECC63g9TBcDqZxOFttWIbYWIz15UDtbgBDSvqowEOxooU3P1FkLaHR2ZvvOCkSwLRoSH0CN5aVy3PT/XA88rkzR/IT+hAm03Yr0ZeaIY28bvwBR+VXydzKxsYYraU1b1ecAw2qhdVF1vDp7xlaVC9Aaj0+u7RdJra7WRbMf6g22LQ3e8NYP6O/hLQnS6oAXdaN+XmoNV8GT44KNkg1XEKPwOj7N1z2zOCDFcMHsgmq+8CU0tQB1O3HY=
   file_glob: true
-  file: "liimactl.exe"
+  file: "out/*"
   skip_cleanup: true
   on:
     tags: true

@@ -1,3 +1,4 @@
 /.vscode
 /liimactl
-client/debug
+/liimactl.exe
+/client/debug
