@@ -3,20 +3,23 @@ services:
 - docker
 env:
   global:
-    - DOCKER_CMD="docker run -it --rm -v $PWD:/go/src/github.com/liimaorg/liimactl -w /go/src/github.com/liimaorg/liimactl"
-    - DOCKER_IMG="golang:1.9-alpine"
+  - DOCKER_CMD="docker run -it --rm -v $PWD:/go/src/github.com/liimaorg/liimactl -w
+    /go/src/github.com/liimaorg/liimactl"
+  - DOCKER_IMG="golang:1.9-alpine"
 install:
-- $DOCKER_CMD -e GOOS=linux   -e GOARCH=amd64 -e CGO_ENABLED=0 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH'
-- $DOCKER_CMD -e GOOS=windows -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH.exe'
-- $DOCKER_CMD -e GOOS=darwin  -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH'
+- "$DOCKER_CMD -e GOOS=linux   -e GOARCH=amd64 -e CGO_ENABLED=0 $DOCKER_IMG sh -c
+  'go build -o out/liimactl-$GOOS-$GOARCH'"
+- "$DOCKER_CMD -e GOOS=windows -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH.exe'"
+- "$DOCKER_CMD -e GOOS=darwin  -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH'"
 script:
-- $DOCKER_CMD $DOCKER_IMG go test -v ./...
+- "$DOCKER_CMD $DOCKER_IMG go test -v ./..."
 deploy:
   provider: releases
   api_key:
-    secure: aMserxLJT49UCceWT7Ti4E7TXdWGqc0pR/Wjyh7N4OYpFlZE2tx+o7T3LrplMVpKYZy+YlWuXYizeF+uL7swVzLJL8pgVb8j+zI/CNA/UL6QwzXWW8t5Cy6Ob+mcQSeIItimvowgdZ8AAja2hBS8of3xUoESZo6DsCSVS5s8BqSiPu6oV9Ua9yoKnNs2J17FjJ23x8DUAHTTVU84FKqtFVtSI+pTIBnex/b0wVgypeFMciIUIUXrp2flQewZ0pdTAYfCrIG74VNgsTRzs9ikBK5+lr8I8se62zW1m7gOP7ycYU+HJEUrahwe4W+ckfgXv4pK50P5ZsiwfYWEeo6jzKUg5qQubX1GKDoB0+LL/sDYxq/uiQ+7Djs/UIrwsBQ8Xzt/FTQEfANA0CTIyVHv0SyL+nwSJDl4wUSwmkLx76FcZIggh45HECC63g9TBcDqZxOFttWIbYWIz15UDtbgBDSvqowEOxooU3P1FkLaHR2ZvvOCkSwLRoSH0CN5aVy3PT/XA88rkzR/IT+hAm03Yr0ZeaIY28bvwBR+VXydzKxsYYraU1b1ecAw2qhdVF1vDp7xlaVC9Aaj0+u7RdJra7WRbMf6g22LQ3e8NYP6O/hLQnS6oAXdaN+XmoNV8GT44KNkg1XEKPwOj7N1z2zOCDFcMHsgmq+8CU0tQB1O3HY=
+    secure: vO73wpfZPK8+bj+5ulxkaYeGcRzjb0obKJZrU8Y4wGNkd6DFujACpEasdZd71erM/7h5b93r3++fjPLIiznPq9ccqP3xQ2eIK5VRHvHG8a/c8mVsMP/8hpVdRS9/1kbx3T02Sqh1LSYoI8I5oOfB3SfMrbcCw9Yd8ifGNRaxjYJsgXoLOOGq/cGFU6rrjfIKFSp4Scb1ZdVUb/3hpKXPBNMIx0hKGplryLK/YbvdyXF9NORH1KqtCTeE7xAsEbJANwbM28JMwrwgq3mk7SrlladZ98EDuefQGoN/YYmseOX8XnJx7O+Y6DgCNMm7HG+jV6O6KfwAh/1QZcz+ECwcOnyugEtBspEHzCa15QSJIm1AcpiwejDdnDtXeubAEAT5MqFWq/VdqHh20WJLkkfviITvVFnY+2MOzGMEVwWiLwpOIwPtl9jEM1pkCsJG8OTS7TcIUKJpbl9eGg914RmN1fYdpB33Nr+ZE/cpMRHihPp8U2n/j1Rw5iPvKwQYkzKTKRwp6MVskZatAWyMik1WNfCYfOns99BABrlqIIhukfVKPZI2GhRQgAvdHCI+nyS67mGfKPW1QY6ummaj6EebT6tBxEk07I55tI/HjswcL01GpCZzUf8tpTG7Pzfj5O0IJhcKEnKdCvpXLvrp4XsVIzT3u56Nh0eq5Jz0BWOD34w=
   file_glob: true
   file: "out/*"
   skip_cleanup: true
   on:
     tags: true
+    repo: liimaorg/liimactl
