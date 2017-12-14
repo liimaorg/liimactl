@@ -2,6 +2,7 @@ package hostname
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"fmt"
@@ -19,8 +20,8 @@ func TestNewHostnameCmd(t *testing.T) {
 		args []string //Arguments
 		want string   //Wanted testresult
 	}{
-		{"Test1", []string{"get", "--appServer=testApp"}, "testApp "},
-		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "testApp2 T "},
+		{"Test1", []string{"get", "--appServer=testApp"}, "testApp"},
+		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "T        testApp2"},
 	}
 
 	//Init config
@@ -54,7 +55,7 @@ func TestNewHostnameCmd(t *testing.T) {
 				t.Errorf("Execute() failed with %v", err)
 			}
 			//Check result
-			if got := buf.String(); got != tt.want {
+			if got := buf.String(); !strings.HasPrefix(got, tt.want) {
 				t.Errorf("Commands-Output = %v, want %v", got, tt.want)
 			}
 
