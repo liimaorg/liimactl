@@ -126,7 +126,7 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 
 	//Setup request with format "application/json"
 	//ToDo: validate config.host (ending slash)
-	reqURL := fmt.Sprintf(c.config.Host + url)
+	reqURL := c.config.Host + url
 	req, err := http.NewRequest(method, reqURL, bodydata)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")

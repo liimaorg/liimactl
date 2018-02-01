@@ -3,7 +3,6 @@ package deployment
 import (
 	"fmt"
 	"sort"
-	"time"
 
 	"github.com/liimaorg/liimactl/client"
 	"github.com/spf13/cobra"
@@ -56,17 +55,7 @@ func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 	//Print result
 	sort.Sort(deployments)
 	for _, deployment := range deployments {
-		cmd.Println("------")
-		cmd.Printf("%s ", deployment.AppServerName)
-		cmd.Printf("%s ", deployment.EnvironmentName)
-		cmd.Printf("%s ", deployment.ReleaseName)
-		cmd.Printf("%s ", time.Unix(0, deployment.DeploymentDate*int64(time.Millisecond)).Format("2006-01-02T15:04"))
-		cmd.Println(deployment.State)
-
-		for _, appsWithVersion := range deployment.AppsWithVersion {
-			cmd.Printf("%s ", appsWithVersion.ApplicationName)
-			cmd.Println(appsWithVersion.Version)
-		}
+		PrintDeployment(cmd, deployment)
 	}
 
 }

@@ -82,11 +82,11 @@ func (commandOption *CommandOptionsCreateDeployment) validate() error {
 }
 
 //CreateDeployment create a deployment and returns the deploymentresponse from the client
-func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (DeplyomentResponse, error) {
+func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (DeploymentResponse, error) {
 
 	if err := commandOptions.validate(); err != nil {
 		//log.Fatal("Error command validation: ", err)
-		return DeplyomentResponse{}, err
+		return DeploymentResponse{}, err
 	}
 
 	//Build URL
@@ -96,12 +96,19 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	deploymentRequest := DeplyomentRequest{}
 	deploymentRequest.AppServerName = commandOptions.AppServer
 	deploymentRequest.EnvironmentName = commandOptions.Environment
+	deploymentRequest.ExecuteShakedownTest = commandOptions.ExecuteShakedownTest
 	deploymentRequest.ReleaseName = &commandOptions.Release
 	if commandOptions.Release == "" {
 		deploymentRequest.ReleaseName = nil
 	}
-	deploymentRequest.DeploymentDate = commandOptions.DeploymentDate
-	deploymentRequest.ExecuteShakedownTest = commandOptions.ExecuteShakedownTest
+	//Set deploymentdate
+	const dateTimeFormat = "2006-01-02 15:04MST"           //Input Format
+	const liimaDateTimeFormat = "2006-01-02T15:04:05-0700" //Format for Liima UTC
+	actTimeZone, _ := time.Now().In(time.Local).Zone()     //Load act timezone
+	//Parse time in actual timezone
+	t, _ := time.Parse(dateTimeFormat, commandOptions.DeploymentDate+actTimeZone)
+	//Format to liima UTC format
+	deploymentRequest.DeploymentDate = t.Format(liimaDateTimeFormat)
 
 	//Get application and version from last deployment of given "from environment"
 	if commandOptions.FromEnvironment != "" {
@@ -145,7 +152,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	}
 
 	//Call rest client
-	deploymentResponse := DeplyomentResponse{}
+	deploymentResponse := DeploymentResponse{}
 	if err := cli.Client.DoRequest(http.MethodPost, url, &deploymentRequest, &deploymentResponse); err != nil {
 		log.Fatal("Error rest call: ", err)
 	}
