@@ -45,6 +45,9 @@ func serverMuxHandler() *http.ServeMux {
 	// Deployment test handler
 	r.HandleFunc("/resources/deployments", listDeploymentHandler)
 
+	// Deployment filter test handler
+	r.HandleFunc("/resources/deployments/filter", listDeploymentFilterHandler)
+
 	//Hostname test handler
 	r.HandleFunc("/resources/hostNames", listHostnameHandler)
 
@@ -72,6 +75,7 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 
 		//GET
 	} else {
+
 		//Create  response
 		response := Deployments{{}}
 
@@ -85,6 +89,7 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 			value := strings.Split(command, "=")[1]
 			util.SetValueIfTagExists(&response[0], key, value)
 		}
+
 		//Send response
 		deployment, err := json.Marshal(response)
 		if err != nil {
@@ -93,6 +98,24 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write(deployment)
 	}
+
+}
+
+//Deployment filter test handler
+func listDeploymentFilterHandler(w http.ResponseWriter, r *http.Request) {
+
+	//Create  response
+	response := Deployments{{}}
+	response[0].AppServerName = "Test"
+
+	//Send response
+	deployment, err := json.Marshal(response)
+	if err != nil {
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(deployment)
 
 }
 

@@ -16,9 +16,9 @@ var (
 	//Example command description
 	deploymentInstallExample = fmt.Sprintf(` 
     # Install multiple deplyoments on an environment with specific properties. 
-	liimactl.exe deployment install --environment=I  --fromEnvironment=V
-	liimactl.exe deployment install --environment=I  --fromEnvironment=V --date="2018-02-01 17:00"
-	liimactl.exe deployment install --environment=I  --fromEnvironment=V --date="2018-02-01 17:00" --wait`)
+	liimactl.exe deployment install --environment=Y  --fromEnvironment=B
+	liimactl.exe deployment install --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00"
+	liimactl.exe deployment install --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklist="/c/temp/blacklist.csv"`)
 
 	//Flags of the command
 	commandOptionsInstall client.CommandOptionsInstallDeployment

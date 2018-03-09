@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -56,7 +57,7 @@ func InstallDeployment(cli *Cli, commandOptions *CommandOptionsInstallDeployment
 		log.Fatal("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
 	}
 
-	//Build array of the blacklist from file
+	//Build array server (blacklist)
 	blacklistServers := []string{}
 	if commandOptions.Blacklist != "" {
 		content, err := ioutil.ReadFile(commandOptions.Blacklist)
@@ -66,9 +67,12 @@ func InstallDeployment(cli *Cli, commandOptions *CommandOptionsInstallDeployment
 		blacklistServers = strings.Split(string(content), "\n")
 	}
 
-	//Remove all deployments defined in the blacklist and remove all deployments without state "success"
+	//Array of runtime (blacklist)
+	blacklistRuntime := []string{"Kubernetes", "Kube_helm"}
+
+	//Remove all deployments defined in the blacklist and remove all deployments without state "success" and all deployments w
 	for i := len(deployments) - 1; i >= 0; i-- {
-		if !(util.Contains(deployments[i].AppServerName, blacklistServers)) || (deployments[i].State != DeploymentStateSuccess) {
+		if (util.Contains(deployments[i].AppServerName, blacklistServers)) || (deployments[i].State != DeploymentStateSuccess) || util.Contains(deployments[i].RuntimeName, blacklistRuntime) {
 			deployments = append(deployments[:i], deployments[i+1:]...)
 		}
 	}
@@ -76,25 +80,30 @@ func InstallDeployment(cli *Cli, commandOptions *CommandOptionsInstallDeployment
 	//Create deployments
 	createdDeployments := Deployments{}
 
-	for _, actDeployment := range deployments {
+	//Ask user for confirmation
+	msg := fmt.Sprintf("Do you really want to start the deployment of %d app-servers on environment: %s", len(deployments), commandOptions.Environment)
+	if util.AskYesNo(msg) {
 
-		commandOptionsCreateDeployment := CommandOptionsCreateDeployment{}
-		commandOptionsCreateDeployment.AppServer = actDeployment.AppServerName
-		commandOptionsCreateDeployment.Release = actDeployment.ReleaseName
-		commandOptionsCreateDeployment.Environment = commandOptions.Environment
-		commandOptionsCreateDeployment.DeploymentDate = commandOptions.DeploymentDate
-		commandOptionsCreateDeployment.AppName = make([]string, len(actDeployment.AppsWithVersion))
-		commandOptionsCreateDeployment.AppVersion = make([]string, len(actDeployment.AppsWithVersion))
-		for i := range actDeployment.AppsWithVersion {
-			commandOptionsCreateDeployment.AppName[i] = actDeployment.AppsWithVersion[i].ApplicationName
-			commandOptionsCreateDeployment.AppVersion[i] = actDeployment.AppsWithVersion[i].Version
-		}
+		for _, actDeployment := range deployments {
 
-		deplyoment, err := CreateDeployment(cli, &commandOptionsCreateDeployment)
-		if err != nil {
-			log.Fatal("Error Create Deployment: ", err)
+			commandOptionsCreateDeployment := CommandOptionsCreateDeployment{}
+			commandOptionsCreateDeployment.AppServer = actDeployment.AppServerName
+			commandOptionsCreateDeployment.Release = actDeployment.ReleaseName
+			commandOptionsCreateDeployment.Environment = commandOptions.Environment
+			commandOptionsCreateDeployment.DeploymentDate = commandOptions.DeploymentDate
+			commandOptionsCreateDeployment.AppName = make([]string, len(actDeployment.AppsWithVersion))
+			commandOptionsCreateDeployment.AppVersion = make([]string, len(actDeployment.AppsWithVersion))
+			for i := range actDeployment.AppsWithVersion {
+				commandOptionsCreateDeployment.AppName[i] = actDeployment.AppsWithVersion[i].ApplicationName
+				commandOptionsCreateDeployment.AppVersion[i] = actDeployment.AppsWithVersion[i].Version
+			}
+
+			deplyoment, err := CreateDeployment(cli, &commandOptionsCreateDeployment)
+			if err != nil {
+				log.Fatal("Error Create Deployment: ", err)
+			}
+			createdDeployments = append(createdDeployments, deplyoment)
 		}
-		createdDeployments = append(createdDeployments, deplyoment)
 	}
 
 	//Return response

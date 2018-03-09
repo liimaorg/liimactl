@@ -132,3 +132,22 @@ func ValidateSingleChar(input string) bool {
 	Re := regexp.MustCompile(`^[a-zA-Z]$`)
 	return Re.MatchString(input)
 }
+
+//AskYesNo want's a user confirmation yes from the console
+func AskYesNo(message string) bool {
+	var s string
+
+	fmt.Printf("%s [y/n]: ", message)
+	_, err := fmt.Scan(&s)
+	if err != nil {
+		panic(err)
+	}
+
+	s = strings.TrimSpace(s)
+	s = strings.ToLower(s)
+
+	if s == "y" || s == "yes" {
+		return true
+	}
+	return false
+}
