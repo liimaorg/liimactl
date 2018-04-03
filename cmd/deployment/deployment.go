@@ -1,6 +1,8 @@
 package deployment
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/liimaorg/liimactl/client"
@@ -16,9 +18,9 @@ func NewDeploymentCmd(cli *client.Cli) *cobra.Command {
 	}
 
 	DeploymentCmd.AddCommand(newGetCommand(cli))
-	DeploymentCmd.AddCommand(newGetFilterCommand(cli))
+	DeploymentCmd.AddCommand(newGetFilteredDeploymentsCommand(cli))
 	DeploymentCmd.AddCommand(newCreateCommand(cli))
-	DeploymentCmd.AddCommand(newInstallCommand(cli))
+	DeploymentCmd.AddCommand(newPromoteCommand(cli))
 
 	return DeploymentCmd
 }
@@ -49,4 +51,23 @@ func PrintDeployment(cmd *cobra.Command, deployment client.DeploymentResponse) {
 		cmd.Println(appsWithVersion.Version)
 	}
 
+}
+
+//AskYesNo want's a user confirmation yes from the console
+func AskYesNo(message string) bool {
+	var s string
+
+	fmt.Printf("%s [y/n]: ", message)
+	_, err := fmt.Scan(&s)
+	if err != nil {
+		panic(err)
+	}
+
+	s = strings.TrimSpace(s)
+	s = strings.ToLower(s)
+
+	if s == "y" || s == "yes" {
+		return true
+	}
+	return false
 }

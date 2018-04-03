@@ -104,9 +104,18 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 //Deployment filter test handler
 func listDeploymentFilterHandler(w http.ResponseWriter, r *http.Request) {
 
+	testapp := []struct {
+		ApplicationName string `json:"applicationName"`
+		Version         string `json:"version"`
+	}{
+		{"testapp", "1.0"},
+	}
+
 	//Create  response
 	response := Deployments{{}}
 	response[0].AppServerName = "Test"
+	response[0].AppsWithVersion = testapp
+	response[0].State = DeploymentStateSuccess
 
 	//Send response
 	deployment, err := json.Marshal(response)

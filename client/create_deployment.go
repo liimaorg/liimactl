@@ -12,6 +12,12 @@ import (
 	"github.com/liimaorg/liimactl/client/util"
 )
 
+//DateTimeFormat defines the actual date time format
+const DateTimeFormat = "2006-01-02 15:04MST"
+
+//LiimaDateTimeFormat defines the format for Liima UTC
+const LiimaDateTimeFormat = "2006-01-02T15:04:05-0700"
+
 //appsWithVersion type
 type appsWithVersion struct {
 	ApplicationName string `json:"applicationName"`
@@ -85,7 +91,6 @@ func (commandOption *CommandOptionsCreateDeployment) validate() error {
 func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (DeploymentResponse, error) {
 
 	if err := commandOptions.validate(); err != nil {
-		//log.Fatal("Error command validation: ", err)
 		return DeploymentResponse{}, err
 	}
 
@@ -102,13 +107,11 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 		deploymentRequest.ReleaseName = nil
 	}
 	//Set deploymentdate
-	const dateTimeFormat = "2006-01-02 15:04MST"           //Input Format
-	const liimaDateTimeFormat = "2006-01-02T15:04:05-0700" //Format for Liima UTC
-	actTimeZone, _ := time.Now().In(time.Local).Zone()     //Load act timezone
+	actTimeZone, _ := time.Now().In(time.Local).Zone() //Load act timezone
 	//Parse time in actual timezone
-	t, _ := time.Parse(dateTimeFormat, commandOptions.DeploymentDate+actTimeZone)
+	t, _ := time.Parse(DateTimeFormat, commandOptions.DeploymentDate+actTimeZone)
 	//Format to liima UTC format
-	deploymentRequest.DeploymentDate = t.Format(liimaDateTimeFormat)
+	deploymentRequest.DeploymentDate = t.Format(LiimaDateTimeFormat)
 
 	//Get application and version from last deployment of given "from environment"
 	if commandOptions.FromEnvironment != "" {
@@ -154,7 +157,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	//Call rest client
 	deploymentResponse := DeploymentResponse{}
 	if err := cli.Client.DoRequest(http.MethodPost, url, &deploymentRequest, &deploymentResponse); err != nil {
-		log.Fatal("Error rest call: ", err)
+		return deploymentResponse, err
 	}
 
 	//Wait on deplyoment success or failed

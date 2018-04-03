@@ -21,7 +21,7 @@ func TestNewDeploymentGetCmd(t *testing.T) {
 	}{
 		{"Test1", []string{"get", "--appServer=testApp"}, "------\ntestApp"},
 		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "------\ntestApp2 T"},
-		{"Test3", []string{"getFilter", "--filter=[{\"name\":\"Environment\",\"comp\":\"eq\",\"val\":\"Y\"},{\"name\":\"Application server\",\"comp\":\"eq\",\"val\":\"testApp3\"}]"}, "------\nTest"},
+		{"Test3", []string{"getFiltered", "--filter=[{\"name\":\"Environment\",\"comp\":\"eq\",\"val\":\"Y\"},{\"name\":\"Application server\",\"comp\":\"eq\",\"val\":\"testApp3\"}]"}, "------\nTest"},
 	}
 
 	//Init config
@@ -73,6 +73,8 @@ func TestNewDeploymentCreateCmd(t *testing.T) {
 		want string   //Wanted testresult
 	}{
 		{"Test1", []string{"create", "--appServer=testApp", "--environment=T", "--appName=test1", "--version=1.1.1"}, "------\nSUCCESS\n"},
+		{"Test2", []string{"promote", "--environment=Y", "--fromEnvironment=B", "--date=2018-02-01 17:00", "--silent"}, "------\nSUCCESS\n"},
+		{"Test3", []string{"promote", "--environment=Y", "--fromEnvironment=B", "--date=2018-02-01 17:00", "-c", "--blacklistAppServer=Test"}, ""},
 	}
 
 	//Init config
