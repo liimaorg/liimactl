@@ -19,9 +19,9 @@ func TestNewDeploymentGetCmd(t *testing.T) {
 		args []string //Arguments
 		want string   //Wanted testresult
 	}{
-		{"Test1", []string{"get", "--appServer=testApp"}, "------\ntestApp"},
-		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "------\ntestApp2 T"},
-		{"Test3", []string{"get-filtered", "--filter=[{\"name\":\"Environment\",\"comp\":\"eq\",\"val\":\"Y\"},{\"name\":\"Application server\",\"comp\":\"eq\",\"val\":\"testApp3\"}]"}, "------\nTest"},
+		{"Test1", []string{"get", "--appServer=testApp"}, "------\nTest"},
+		{"Test2", []string{"get", "--appServer=testApp2", "--environment=T"}, "------\nTest"},
+		{"Test3", []string{"get", "--filter=[{\"name\":\"Environment\",\"comp\":\"eq\",\"val\":\"Y\"},{\"name\":\"Application server\",\"comp\":\"eq\",\"val\":\"testApp3\"}]"}, "------\nTest"},
 	}
 
 	//Init config

@@ -74,28 +74,7 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 
 		//GET
 	} else {
-
-		//Create  response
-		response := Deployments{{}}
-
-		//Split the requested Url
-		cuttedURL := strings.Split(r.URL.String(), "?")[1]
-		//Split the subcommands
-		commands := strings.Split(cuttedURL, "&")
-		//Set the requested command-value as respond if a tag exits in the hostename
-		for _, command := range commands {
-			key := strings.Split(command, "=")[0]
-			value := strings.Split(command, "=")[1]
-			util.SetValueIfTagExists(&response[0], key, value)
-		}
-
-		//Send response
-		deployment, err := json.Marshal(response)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Write(deployment)
+		w.WriteHeader(http.StatusNotFound)
 	}
 
 }

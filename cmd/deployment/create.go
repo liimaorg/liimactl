@@ -1,7 +1,6 @@
 package deployment
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/liimaorg/liimactl/client"
@@ -10,15 +9,13 @@ import (
 
 var (
 	//Long command description
-	deploymentCreateLong = fmt.Sprintf(` 
-    Create deployment with the use of specific properties.`)
+	deploymentCreateLong = `	Create deployment with the use of specific properties.`
 
 	//Example command description
-	deploymentCreateExample = fmt.Sprintf(` 
-    # Create a deplyoment with specific properties. 
+	deploymentCreateExample = `	# Create a deplyoment with specific properties. 
 	liimactl.exe deployment create --appServer=test_application --appName=ch_mobi_app1 --version="1.0.0" --appName=ch_mobi_app2 --version="1.0.1" --environment=I
 	liimactl.exe deployment create --appServer=aps_bau --appName=ch_mobi_aps_bau --version="1.0.32" --environment=W --date="2018-02-01 16:00"
-	liimactl.exe deployment create --appServer=generic_test --appName=ch_mobi_generic_test --version="1.0.1" --environment=U --wait`)
+	liimactl.exe deployment create --appServer=generic_test --appName=ch_mobi_generic_test --version="1.0.1" --environment=U --wait`
 
 	//Flags of the command
 	commandOptionsCreate client.CommandOptionsCreateDeployment

@@ -1,7 +1,6 @@
 package hostname
 
 import (
-	"fmt"
 	"log"
 	"sort"
 
@@ -11,13 +10,11 @@ import (
 
 var (
 	//Long command description
-	hostnameLong = fmt.Sprintf(` 
-    Get a hostname with the use of specific filter.`)
+	hostnameLong = `	Get a hostname with the use of specific filter.`
 
 	//Example command description
-	hostnameExample = fmt.Sprintf(` 
-    # Get a hostname with specific filter. 
-    liimactl.exe hostname get --appServer=test_application --environment=I`)
+	hostnameExample = `	# Get a hostname with specific filter. 
+	liimactl.exe hostname get --appServer=test_application --environment=I`
 
 	//Flags of the command
 	commandOptions client.CommandOptionsHostName

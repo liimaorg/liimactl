@@ -114,7 +114,6 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 
 	//Get application and version from last deployment of given "from environment"
 	if commandOptions.FromEnvironment != "" {
-
 		commandOptionsGet := CommandOptionsGetDeployment{}
 		commandOptionsGet.Environment = []string{commandOptions.FromEnvironment}
 		commandOptionsGet.AppServer = []string{commandOptions.AppServer}

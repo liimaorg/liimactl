@@ -10,15 +10,13 @@ import (
 
 var (
 	//Long command description
-	deploymentPromoteLong = fmt.Sprintf(` 
-    Promote deployment on an environemt with the use of specific properties.`)
+	deploymentPromoteLong = `	Promote deployment on an environemt with the use of specific properties.`
 
 	//Example command description
-	deploymentPromoteExample = fmt.Sprintf(` 
-    # Promote multiple deplyoments on an environment with specific properties. 
+	deploymentPromoteExample = `	# Promote multiple deplyoments on an environment with specific properties. 
 	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B
 	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistRuntime="Kubernetes,Kube_helm"
-	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistAppServer="aps_bau_kube,vvn"`)
+	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistAppServer="aps_bau_kube,vvn"`
 
 	//Flags of the command
 	commandOptionsPromote client.CommandOptionsPromoteDeployments
