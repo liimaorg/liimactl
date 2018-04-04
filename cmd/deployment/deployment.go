@@ -26,7 +26,7 @@ func NewDeploymentCmd(cli *client.Cli) *cobra.Command {
 }
 
 //PrintDeployment prints out the properties of a DeploymentResponse
-func PrintDeployment(cmd *cobra.Command, deployment client.DeploymentResponse) {
+func PrintDeployment(cmd *cobra.Command, deployment *client.DeploymentResponse) {
 
 	//Print result
 	cmd.Println("------")

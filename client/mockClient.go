@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -165,7 +164,7 @@ func (c *MockClient) DoRequest(method string, url string, bodyType interface{}, 
 	if method == http.MethodPost {
 		bData, err := json.Marshal(bodyType)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		_ = bData
 	}

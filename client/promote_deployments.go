@@ -75,10 +75,6 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 	//Create deployments
 	createdDeployments := Deployments{}
 
-	//Ask user for confirmation
-	//msg := fmt.Sprintf("Do you really want to start the deployment of %d app-servers on environment: %s", len(deployments), commandOptions.Environment)
-	//if util.AskYesNo(msg) {
-
 	for _, actDeployment := range deployments {
 
 		commandOptionsCreateDeployment := CommandOptionsCreateDeployment{}
@@ -98,9 +94,8 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 			log.Println("Error Create Deployment: ", err)
 			return createdDeployments, err
 		}
-		createdDeployments = append(createdDeployments, deplyoment)
+		createdDeployments = append(createdDeployments, *deplyoment)
 	}
-	//}
 
 	//Return response
 	return createdDeployments, nil

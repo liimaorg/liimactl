@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -88,10 +87,10 @@ func (commandOption *CommandOptionsCreateDeployment) validate() error {
 }
 
 //CreateDeployment create a deployment and returns the deploymentresponse from the client
-func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (DeploymentResponse, error) {
+func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (*DeploymentResponse, error) {
 
 	if err := commandOptions.validate(); err != nil {
-		return DeploymentResponse{}, err
+		return nil, err
 	}
 
 	//Build URL
@@ -122,9 +121,12 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 		commandOptionsGet.TrackingID = -1
 		commandOptionsGet.OnlyLatest = true
 		//Get last deployment
-		deployments := GetDeployment(cli, &commandOptionsGet)
+		deployments, err := GetDeployment(cli, &commandOptionsGet)
+		if err != nil {
+			return nil, err
+		}
 		if len(deployments) == 0 {
-			log.Fatal("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
+			return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment found from environment: %s", commandOptions.FromEnvironment)
 		}
 		lastDeployment := deployments[0]
 		//Set app and version
@@ -155,7 +157,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	}
 
 	//Call rest client
-	deploymentResponse := DeploymentResponse{}
+	deploymentResponse := &DeploymentResponse{}
 	if err := cli.Client.DoRequest(http.MethodPost, url, &deploymentRequest, &deploymentResponse); err != nil {
 		return deploymentResponse, err
 	}
@@ -169,26 +171,27 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 		//Timeout 10min = 600sec / 5sec = 120 counts
 		maxCounts := commandOptions.MaxWaitTime / 5
 		for i := 0; i < maxCounts; i++ {
-			deployments := GetDeployment(cli, &commandOptionsGet)
+			deployments, err := GetDeployment(cli, &commandOptionsGet)
+			if err != nil {
+				return nil, err
+			}
 
 			if len(deployments) != 1 {
-				log.Fatal("There was an error on creating the deplyoment, no deployment get")
+				return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment get")
 			}
 
 			fmt.Println("State: ", deployments[0].State)
 
-			deploymentResponse = deployments[0]
+			deploymentResponse = &deployments[0]
 			if deployments[0].State == DeploymentStateFailed || deployments[0].State == DeploymentStateSuccess {
 				break
 			}
 			if i < maxCounts-1 {
 				time.Sleep(time.Second * 5)
 			} else {
-				log.Fatal("Timeout on deployment")
+				return nil, fmt.Errorf("Timeout on deployment")
 			}
-
 		}
-
 	}
 
 	//Return response

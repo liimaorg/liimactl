@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/liimaorg/liimactl/client/util"
@@ -73,7 +72,7 @@ const (
 )
 
 //GetDeployment return the deployment from the client
-func GetDeployment(cli *Cli, commandOptions *CommandOptionsGetDeployment) Deployments {
+func GetDeployment(cli *Cli, commandOptions *CommandOptionsGetDeployment) (Deployments, error) {
 
 	//Build URL
 	url := fmt.Sprintf("resources/./deployments?")
@@ -82,8 +81,8 @@ func GetDeployment(cli *Cli, commandOptions *CommandOptionsGetDeployment) Deploy
 	//Call rest client
 	deployments := Deployments{}
 	if err := cli.Client.DoRequest(http.MethodGet, url, nil, &deployments); err != nil {
-		log.Fatal("Error rest call: ", err)
+		return Deployments{}, fmt.Errorf("Error rest call: %v", err)
 	}
 
-	return deployments
+	return deployments, nil
 }

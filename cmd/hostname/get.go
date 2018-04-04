@@ -2,6 +2,7 @@ package hostname
 
 import (
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/liimaorg/liimactl/client"
@@ -49,7 +50,10 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 
 	//Get hostnames
-	hostnames := client.GetHostname(cli, &commandOptions)
+	hostnames, err := client.GetHostname(cli, &commandOptions)
+	if err != nil {
+		log.Fatalf("Couldn't get hostnames: %v", err)
+	}
 
 	//Print result
 	sort.Sort(hostnames)
@@ -82,5 +86,4 @@ func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 			cmd.Println(hostname.Domain)
 		}
 	}
-
 }

@@ -44,7 +44,7 @@ func newPromoteCommand(cli *client.Cli) *cobra.Command {
 	cmd.Flags().IntVarP(&commandOptionsPromote.MaxWaitTime, "maxWaitTime", "t", 600, "Max Wait time [seconds] until the deplyoment success or failed")
 	cmd.Flags().StringSliceVarP(&commandOptionsPromote.BlacklistAppServer, "blacklistAppServer", "b", []string{}, "Blacklist with all appServer, which should not be deployed")
 	cmd.Flags().StringSliceVarP(&commandOptionsPromote.BlacklistRuntime, "blacklistRuntime", "r", []string{}, "Blacklist with all runtimes, which should not be deployed")
-	cmd.Flags().BoolVarP(&commandOptionsPromote.Silent, "silent", "c", false, "silent mode, no confirmation of promote the whole environment")
+	cmd.Flags().BoolVarP(&commandOptionsPromote.Silent, "silent", "c", false, "Silent mode, no confirmation of promote the whole environment")
 
 	return cmd
 }
@@ -65,7 +65,7 @@ func runPromote(cmd *cobra.Command, cli *client.Cli, args []string) {
 		for _, deployment := range deplyoments {
 
 			//Print result
-			PrintDeployment(cmd, deployment)
+			PrintDeployment(cmd, &deployment)
 
 			//Write error failed -> return code = 1 with log.Fatal
 			if deployment.State == client.DeploymentStateFailed {

@@ -17,8 +17,8 @@ var (
 	//Example command description
 	deploymentGetFilteredExample = fmt.Sprintf(` 
     # Get a deplyoment with specific filters. 
-	liimactl.exe deployment getFiltered --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Application server","comp":"eq","val":"aps_bau_kube"}]'
-	liimactl.exe deployment getFiltered --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Latest deployment job for App Server and Env","comp":"eq","val":"true"}]'`)
+	liimactl.exe deployment get-filtered --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Application server","comp":"eq","val":"liima"}]'
+	liimactl.exe deployment get-filtered --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Latest deployment job for App Server and Env","comp":"eq","val":"true"}]'`)
 
 	//Flags of the command
 	commandOptionsGetFilteredDeployments client.CommandOptionsGetFilteredDeployments
@@ -27,7 +27,7 @@ var (
 //newGetFilteredDeploymentsCommand is a command to get deployments filter
 func newGetFilteredDeploymentsCommand(cli *client.Cli) *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:     "getFiltered [flags] ",
+		Use:     "get-filtered [flags] ",
 		Short:   "Get deployments filtered",
 		Long:    deploymentGetFilteredLong,
 		Example: deploymentGetFilteredExample,
@@ -50,12 +50,10 @@ func runGetFilteredDeplyoments(cmd *cobra.Command, cli *client.Cli, args []strin
 		log.Fatal("Error on getting the filtered deployments: ", err)
 	}
 
-	const createdFormat = "2017-07-06 21:00" //"Jan 2, 2006 at 3:04pm (MST)"
-
 	//Print result
 	sort.Sort(deployments)
 	for _, deployment := range deployments {
-		PrintDeployment(cmd, deployment)
+		PrintDeployment(cmd, &deployment)
 	}
 
 }
