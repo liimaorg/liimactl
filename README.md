@@ -27,3 +27,12 @@ TLSClientConfig:
     CAFile: path to ca certs in pem format (optional)
     InsecureSkipVerify: false (default false)
 ```
+
+# Releasing
+
+Create a new GIT tag and push it:
+```
+git tag -a v0.0.2 -m "Liimactl release v0.0.2"
+git push origin v0.0.2
+```
+Travis-ci will then build the tag, create a new release on the github page and upload the binaries (win, mac, linux). After that you can add release notes and publish the release.
