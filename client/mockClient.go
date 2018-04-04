@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -45,6 +44,9 @@ func serverMuxHandler() *http.ServeMux {
 	// Deployment test handler
 	r.HandleFunc("/resources/deployments", listDeploymentHandler)
 
+	// Deployment filter test handler
+	r.HandleFunc("/resources/deployments/filter", listDeploymentFilterHandler)
+
 	//Hostname test handler
 	r.HandleFunc("/resources/hostNames", listHostnameHandler)
 
@@ -72,6 +74,7 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 
 		//GET
 	} else {
+
 		//Create  response
 		response := Deployments{{}}
 
@@ -85,6 +88,7 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 			value := strings.Split(command, "=")[1]
 			util.SetValueIfTagExists(&response[0], key, value)
 		}
+
 		//Send response
 		deployment, err := json.Marshal(response)
 		if err != nil {
@@ -93,6 +97,33 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write(deployment)
 	}
+
+}
+
+//Deployment filter test handler
+func listDeploymentFilterHandler(w http.ResponseWriter, r *http.Request) {
+
+	testapp := []struct {
+		ApplicationName string `json:"applicationName"`
+		Version         string `json:"version"`
+	}{
+		{"testapp", "1.0"},
+	}
+
+	//Create  response
+	response := Deployments{{}}
+	response[0].AppServerName = "Test"
+	response[0].AppsWithVersion = testapp
+	response[0].State = DeploymentStateSuccess
+
+	//Send response
+	deployment, err := json.Marshal(response)
+	if err != nil {
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(deployment)
 
 }
 
@@ -133,7 +164,7 @@ func (c *MockClient) DoRequest(method string, url string, bodyType interface{}, 
 	if method == http.MethodPost {
 		bData, err := json.Marshal(bodyType)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		_ = bData
 	}

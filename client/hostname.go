@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/liimaorg/liimactl/client/util"
@@ -45,7 +44,7 @@ type CommandOptionsHostName struct {
 }
 
 //GetHostname return the hostnames from the client
-func GetHostname(cli *Cli, commandOptions *CommandOptionsHostName) Hostnames {
+func GetHostname(cli *Cli, commandOptions *CommandOptionsHostName) (Hostnames, error) {
 
 	//Build URL
 	url := fmt.Sprintf("resources/./hostNames?")
@@ -54,8 +53,8 @@ func GetHostname(cli *Cli, commandOptions *CommandOptionsHostName) Hostnames {
 	//Call rest client
 	hostnames := Hostnames{}
 	if err := cli.Client.DoRequest(http.MethodGet, url, nil, &hostnames); err != nil {
-		log.Fatal("Error rest call: ", err)
+		return hostnames, fmt.Errorf("Error in rest call: %v", err)
 	}
 
-	return hostnames
+	return hostnames, nil
 }

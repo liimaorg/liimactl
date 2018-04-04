@@ -2,8 +2,8 @@ package deployment
 
 import (
 	"fmt"
+	"log"
 	"sort"
-	"time"
 
 	"github.com/liimaorg/liimactl/client"
 	"github.com/spf13/cobra"
@@ -38,8 +38,8 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppName, "appName", "n", []string{}, "Application Name")
 	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppServer, "appServer", "a", []string{}, "Application Server Name")
 	cmd.Flags().StringSliceVarP(&commandOptionsGet.DeploymentState, "deploymentState", "d", []string{}, "Deplyoment State")
-	cmd.Flags().StringSliceVarP(&commandOptionsGet.Environment, "environment", "e", []string{}, "	Environment Filter")
-	cmd.Flags().BoolVarP(&commandOptionsGet.OnlyLatest, "onlyLatest", "l", false, "only Latest Filter")
+	cmd.Flags().StringSliceVarP(&commandOptionsGet.Environment, "environment", "e", []string{}, "Environment Filter")
+	cmd.Flags().BoolVarP(&commandOptionsGet.OnlyLatest, "onlyLatest", "l", false, "Only Latest Filter")
 	cmd.Flags().IntVarP(&commandOptionsGet.TrackingID, "trackingId", "t", -1, "Tracking ID")
 
 	return cmd
@@ -49,24 +49,15 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 
 	//Get deployments
-	deployments := client.GetDeployment(cli, &commandOptionsGet)
-
-	const createdFormat = "2017-07-06 21:00" //"Jan 2, 2006 at 3:04pm (MST)"
+	deployments, err := client.GetDeployment(cli, &commandOptionsGet)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//Print result
 	sort.Sort(deployments)
 	for _, deployment := range deployments {
-		cmd.Println("------")
-		cmd.Printf("%s ", deployment.AppServerName)
-		cmd.Printf("%s ", deployment.EnvironmentName)
-		cmd.Printf("%s ", deployment.ReleaseName)
-		cmd.Printf("%s ", time.Unix(0, deployment.DeploymentDate*int64(time.Millisecond)).Format("2006-01-02T15:04"))
-		cmd.Println(deployment.State)
-
-		for _, appsWithVersion := range deployment.AppsWithVersion {
-			cmd.Printf("%s ", appsWithVersion.ApplicationName)
-			cmd.Println(appsWithVersion.Version)
-		}
+		PrintDeployment(cmd, &deployment)
 	}
 
 }

@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -11,6 +10,12 @@ import (
 
 	"github.com/liimaorg/liimactl/client/util"
 )
+
+//DateTimeFormat defines the actual date time format
+const DateTimeFormat = "2006-01-02 15:04MST"
+
+//LiimaDateTimeFormat defines the format for Liima UTC
+const LiimaDateTimeFormat = "2006-01-02T15:04:05-0700"
 
 //appsWithVersion type
 type appsWithVersion struct {
@@ -82,11 +87,10 @@ func (commandOption *CommandOptionsCreateDeployment) validate() error {
 }
 
 //CreateDeployment create a deployment and returns the deploymentresponse from the client
-func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (DeplyomentResponse, error) {
+func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) (*DeploymentResponse, error) {
 
 	if err := commandOptions.validate(); err != nil {
-		//log.Fatal("Error command validation: ", err)
-		return DeplyomentResponse{}, err
+		return nil, err
 	}
 
 	//Build URL
@@ -96,12 +100,17 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	deploymentRequest := DeplyomentRequest{}
 	deploymentRequest.AppServerName = commandOptions.AppServer
 	deploymentRequest.EnvironmentName = commandOptions.Environment
+	deploymentRequest.ExecuteShakedownTest = commandOptions.ExecuteShakedownTest
 	deploymentRequest.ReleaseName = &commandOptions.Release
 	if commandOptions.Release == "" {
 		deploymentRequest.ReleaseName = nil
 	}
-	deploymentRequest.DeploymentDate = commandOptions.DeploymentDate
-	deploymentRequest.ExecuteShakedownTest = commandOptions.ExecuteShakedownTest
+	//Set deploymentdate
+	actTimeZone, _ := time.Now().In(time.Local).Zone() //Load act timezone
+	//Parse time in actual timezone
+	t, _ := time.Parse(DateTimeFormat, commandOptions.DeploymentDate+actTimeZone)
+	//Format to liima UTC format
+	deploymentRequest.DeploymentDate = t.Format(LiimaDateTimeFormat)
 
 	//Get application and version from last deployment of given "from environment"
 	if commandOptions.FromEnvironment != "" {
@@ -112,9 +121,12 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 		commandOptionsGet.TrackingID = -1
 		commandOptionsGet.OnlyLatest = true
 		//Get last deployment
-		deployments := GetDeployment(cli, &commandOptionsGet)
+		deployments, err := GetDeployment(cli, &commandOptionsGet)
+		if err != nil {
+			return nil, err
+		}
 		if len(deployments) == 0 {
-			log.Fatal("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
+			return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment found from environment: %s", commandOptions.FromEnvironment)
 		}
 		lastDeployment := deployments[0]
 		//Set app and version
@@ -145,9 +157,9 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	}
 
 	//Call rest client
-	deploymentResponse := DeplyomentResponse{}
+	deploymentResponse := &DeploymentResponse{}
 	if err := cli.Client.DoRequest(http.MethodPost, url, &deploymentRequest, &deploymentResponse); err != nil {
-		log.Fatal("Error rest call: ", err)
+		return deploymentResponse, err
 	}
 
 	//Wait on deplyoment success or failed
@@ -159,26 +171,27 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 		//Timeout 10min = 600sec / 5sec = 120 counts
 		maxCounts := commandOptions.MaxWaitTime / 5
 		for i := 0; i < maxCounts; i++ {
-			deployments := GetDeployment(cli, &commandOptionsGet)
+			deployments, err := GetDeployment(cli, &commandOptionsGet)
+			if err != nil {
+				return nil, err
+			}
 
 			if len(deployments) != 1 {
-				log.Fatal("There was an error on creating the deplyoment, no deployment get")
+				return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment get")
 			}
 
 			fmt.Println("State: ", deployments[0].State)
 
-			deploymentResponse = deployments[0]
+			deploymentResponse = &deployments[0]
 			if deployments[0].State == DeploymentStateFailed || deployments[0].State == DeploymentStateSuccess {
 				break
 			}
 			if i < maxCounts-1 {
 				time.Sleep(time.Second * 5)
 			} else {
-				log.Fatal("Timeout on deployment")
+				return nil, fmt.Errorf("Timeout on deployment")
 			}
-
 		}
-
 	}
 
 	//Return response

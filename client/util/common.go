@@ -108,6 +108,16 @@ func SetValueIfTagExists(f interface{}, actTag string, setVal string) {
 	}
 }
 
+//Contains tests if an array contains a certain value, Spaces will be trimed
+func Contains(str string, list []string) bool {
+	for _, v := range list {
+		if strings.TrimSpace(v) == strings.TrimSpace(str) {
+			return true
+		}
+	}
+	return false
+}
+
 //Check can be used for the validation of any expression which returns a boolean (isValid)
 //Example: Check(&myErrorList, x.Y >= 0, "want positive Y, got %d", x.Y)
 func Check(errorList *[]string, isValid bool, errMsg string, args ...interface{}) {

@@ -8,6 +8,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -31,6 +32,15 @@ type Client struct {
 
 // NewClient creates a new liima client from the config
 func NewClient(config *Config) (*Client, error) {
+	errs := config.Validate()
+	if len(errs) != 0 {
+		msg := "Config is invalide: "
+		for _, err := range errs {
+			msg += fmt.Sprintf("%s; ", err)
+		}
+		return nil, errors.New(msg)
+	}
+
 	tr, err := newTransport(config)
 	if err != nil {
 		return nil, err
@@ -117,7 +127,7 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	if method == http.MethodPost {
 		bDataloc, err := json.Marshal(bodyType)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("Couldn't marshal body %v, %v", bodyType, err)
 		}
 		bData = bDataloc
 	}
@@ -126,23 +136,26 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 
 	//Setup request with format "application/json"
 	//ToDo: validate config.host (ending slash)
-	reqURL := fmt.Sprintf(c.config.Host + url)
+	reqURL := c.config.Host + url
 	req, err := http.NewRequest(method, reqURL, bodydata)
+	if err != nil {
+		return fmt.Errorf("Cloudn't create request: %v", err)
+	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
 	// Do request, retry if fails
 	var resp *http.Response
-	nbrOfRetry := 10
+	nbrOfRetry := 3
 	for i := 0; i < nbrOfRetry; i++ {
 
 		respond, err := c.client.Do(req)
 		if err != nil {
-			fmt.Println("Error http request: ", reqURL)
-			fmt.Println("ERROR: ", err)
+			log.Print("Error http request: ", reqURL)
+			log.Print("ERROR: ", err)
 			if respond != nil {
-				fmt.Println("response Status:", respond.Status)
-				fmt.Println("response Headers:", respond.Header)
+				log.Print("response Status:", respond.Status)
+				log.Print("response Headers:", respond.Header)
 			}
 			//return if max retry reached
 			if i >= (nbrOfRetry - 1) {
@@ -153,19 +166,21 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 			defer respond.Body.Close()
 			break
 		}
-
 	}
 
 	// Dump response
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Response Body Error on request: ", reqURL)
-		fmt.Println("response Status:", resp.Status)
-		fmt.Println("response Headers:", resp.Header)
+		log.Print("Response Body Error on request: ", reqURL)
+		log.Print("response Status:", resp.Status)
+		log.Print("response Headers:", resp.Header)
 		return err
 	}
 
 	//Unmarshal json respond to responseType
-	return json.Unmarshal(data, responseType)
-
+	err = json.Unmarshal(data, responseType)
+	if err != nil {
+		return fmt.Errorf("Couldn't unmarshal response: %s\n %s", err, data)
+	}
+	return nil
 }

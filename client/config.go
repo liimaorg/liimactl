@@ -1,6 +1,9 @@
 package client
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
 
 // Config options for the liima client
 type Config struct {
@@ -25,15 +28,20 @@ type TLSClientConfig struct {
 	CAFile string
 	// InsecureSkipVerify controls whether a client verifies the
 	// server's certificate chain and host name.
-	// TODO: implement
 	InsecureSkipVerify bool
 }
 
 // Validate the configuration
 func (config *Config) Validate() []error {
-	//TODO: validate Host
+	validationErrors := make([]error, 0)
+	_, err := url.ParseRequestURI(config.Host)
+	if err != nil {
+		err = fmt.Errorf("hostname is not valid: %s", err)
+		validationErrors = append(validationErrors, err)
+	}
 
-	return config.TLSClientConfig.Validate()
+	validationErrors = append(validationErrors, config.TLSClientConfig.Validate()...)
+	return validationErrors
 }
 
 // Validate TLSClientConfig

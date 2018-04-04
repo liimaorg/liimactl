@@ -61,12 +61,10 @@ func TestNewHostnameCmd(t *testing.T) {
 
 		})
 	}
-
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig(flags *pflag.FlagSet) (*client.Config, error) {
-
 	var config client.Config
 	return &config, nil
 }
