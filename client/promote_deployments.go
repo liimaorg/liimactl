@@ -39,7 +39,6 @@ func (commandOption *CommandOptionsPromoteDeployments) validate() error {
 
 //PromoteDeployments creates multiple deployments and returns the deploymentresponse
 func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeployments) (Deployments, error) {
-
 	//validate commandoptions
 	if err := commandOptions.validate(); err != nil {
 		log.Println("Error command validation: ", err)
@@ -47,12 +46,23 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 	}
 
 	//Create the filter for searching all deplyoments from an environment
-	commandOptionsGetFilter := CommandOptionsGetFilteredDeployments{}
-	filter := []string{`[{"name":"Environment","comp":"eq","val":"`, commandOptions.FromEnvironment, `"},{"name":"Latest deployment job for App Server and Env","comp":"eq","val":"true"}]`}
-	commandOptionsGetFilter.Filter = strings.Join(filter, "")
+	commandOptionsGetFilter := CommandOptionsGetDeployment{}
+	filter := []DeploymentFilter{
+		DeploymentFilter{
+			Name: "Environment",
+			Comp: Eq,
+			Val:  commandOptions.FromEnvironment,
+		},
+		DeploymentFilter{
+			Name: "Latest deployment job for App Server and Env",
+			Comp: Eq,
+			Val:  true,
+		},
+	}
+	commandOptionsGetFilter.Filter = filter
 
 	//Get all last deployments of the given environment
-	deployments, err := GetFilteredDeployments(cli, &commandOptionsGetFilter)
+	deployments, err := GetDeployment(cli, &commandOptionsGetFilter)
 	if err != nil {
 		log.Println("Error on getting the filtered deployments: ", err)
 		return deployments, err

@@ -18,7 +18,6 @@ func NewDeploymentCmd(cli *client.Cli) *cobra.Command {
 	}
 
 	DeploymentCmd.AddCommand(newGetCommand(cli))
-	DeploymentCmd.AddCommand(newGetFilteredDeploymentsCommand(cli))
 	DeploymentCmd.AddCommand(newCreateCommand(cli))
 	DeploymentCmd.AddCommand(newPromoteCommand(cli))
 
