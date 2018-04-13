@@ -16,7 +16,8 @@ var (
 	deploymentPromoteExample = `	# Promote multiple deplyoments on an environment with specific properties. 
 	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B
 	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistRuntime="Kubernetes,Kube_helm"
-	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistAppServer="aps_bau_kube,vvn"`
+	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistAppServer="aps_bau_kube,vvn"
+	liimactl.exe deployment promote --environment=Z  --fromEnvironment=I --whitelistAppServer="appServer1,appServer2" --wait --maxWaitTime=3600`
 
 	//Flags of the command
 	commandOptionsPromote client.CommandOptionsPromoteDeployments
@@ -40,6 +41,7 @@ func newPromoteCommand(cli *client.Cli) *cobra.Command {
 	cmd.Flags().BoolVarP(&commandOptionsPromote.ExecuteShakedownTest, "executeShakeDownTest", "s", false, "Run Shakedowntest after the deplyoment")
 	cmd.Flags().BoolVarP(&commandOptionsPromote.Wait, "wait", "w", false, "Wait maxWaitTime until the deplyoment success or failed")
 	cmd.Flags().IntVarP(&commandOptionsPromote.MaxWaitTime, "maxWaitTime", "t", 600, "Max Wait time [seconds] until the deplyoment success or failed")
+	cmd.Flags().StringSliceVarP(&commandOptionsPromote.WhitelistAppServer, "whitelistAppServer", "a", []string{}, "Whitelist with all appServer, which should be deployed, if no WhitelistAppServer is defined, the whole environment will deployed (exclusive blacklist)")
 	cmd.Flags().StringSliceVarP(&commandOptionsPromote.BlacklistAppServer, "blacklistAppServer", "b", []string{}, "Blacklist with all appServer, which should not be deployed")
 	cmd.Flags().StringSliceVarP(&commandOptionsPromote.BlacklistRuntime, "blacklistRuntime", "r", []string{}, "Blacklist with all runtimes, which should not be deployed")
 	cmd.Flags().BoolVarP(&commandOptionsPromote.Silent, "silent", "c", false, "Silent mode, no confirmation of promote the whole environment")

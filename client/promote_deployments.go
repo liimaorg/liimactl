@@ -2,8 +2,10 @@ package client
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/liimaorg/liimactl/client/util"
 )
@@ -16,6 +18,7 @@ type CommandOptionsPromoteDeployments struct {
 	Wait                 bool     //Wait as long the WaitTime until the deplyoment success or failed
 	MaxWaitTime          int      //Max wait time [seconds] until the deplyoment success or failed
 	FromEnvironment      string   //Deploy last deplyoment from given environment
+	WhitelistAppServer   []string //Whitelist with all appServer, which should be deployed, if not WhitelistAppServer is defined, the whole environment will deployed (exclusive blacklist)
 	BlacklistAppServer   []string //Blacklist with all appServer, which should not be deployed
 	BlacklistRuntime     []string //Blacklist with all runtimes, which should not be deployed
 	Silent               bool     //silent mode, no confirmation of promote the whole environment
@@ -42,34 +45,26 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 	//validate commandoptions
 	if err := commandOptions.validate(); err != nil {
 		log.Println("Error command validation: ", err)
-		return Deployments{}, err
+		return nil, err
 	}
 
 	//Create the filter for searching all deplyoments from an environment
 	commandOptionsGetFilter := CommandOptionsGetDeployment{}
-	filter := []DeploymentFilter{
-		DeploymentFilter{
-			Name: "Environment",
-			Comp: Eq,
-			Val:  commandOptions.FromEnvironment,
-		},
-		DeploymentFilter{
-			Name: "Latest deployment job for App Server and Env",
-			Comp: Eq,
-			Val:  true,
-		},
-	}
-	commandOptionsGetFilter.Filter = filter
+	commandOptionsGetFilter.Environment = []string{commandOptions.FromEnvironment}
+	commandOptionsGetFilter.OnlyLatest = true
+	commandOptionsGetFilter.TrackingID = -1
+	commandOptionsGetFilter.AppServer = commandOptions.WhitelistAppServer
 
 	//Get all last deployments of the given environment
 	deployments, err := GetDeployment(cli, &commandOptionsGetFilter)
 	if err != nil {
 		log.Println("Error on getting the filtered deployments: ", err)
-		return deployments, err
+		return nil, err
 	}
+
 	if len(deployments) == 0 {
 		log.Println("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
-		return deployments, err
+		return nil, err
 	}
 
 	//Remove all deployments
@@ -99,12 +94,57 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 			commandOptionsCreateDeployment.AppVersion[i] = actDeployment.AppsWithVersion[i].Version
 		}
 
-		deplyoment, err := CreateDeployment(cli, &commandOptionsCreateDeployment)
+		deployment, err := CreateDeployment(cli, &commandOptionsCreateDeployment)
 		if err != nil {
 			log.Println("Error Create Deployment: ", err)
 			return createdDeployments, err
 		}
-		createdDeployments = append(createdDeployments, *deplyoment)
+		createdDeployments = append(createdDeployments, *deployment)
+	}
+
+	//Wait on deplyoment success or failed
+	sleepTime := 60 //seconds, polling each x seconds
+	if commandOptions.Wait && commandOptions.MaxWaitTime > sleepTime {
+
+		commandOptionsGet := CommandOptionsGetDeployment{}
+		commandOptionsGet.Environment = []string{commandOptions.Environment}
+		commandOptionsGet.OnlyLatest = true
+		commandOptionsGet.TrackingID = -1
+		for _, actDeployment := range createdDeployments {
+			commandOptionsGet.AppServer = append(commandOptionsGet.AppServer, actDeployment.AppServerName)
+		}
+
+		//Timeout 10min = 600sec / 30sec = 20 counts
+		maxCounts := commandOptions.MaxWaitTime / sleepTime
+		for i := 0; i < maxCounts; i++ {
+			deployments, err := GetDeployment(cli, &commandOptionsGet)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(deployments) == 0 {
+				return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment get")
+			}
+
+			createdDeployments = deployments
+
+			// Check if all deployments are finished
+			allfinished := true
+			for _, actDeployment := range deployments {
+				log.Printf("AppServer: %-30s State: %-20s\n", actDeployment.AppServerName, actDeployment.State)
+				allfinished = allfinished && (actDeployment.State == DeploymentStateFailed || actDeployment.State == DeploymentStateSuccess)
+			}
+			// Break loop if finished
+			if allfinished {
+				break
+			}
+
+			if i < maxCounts-1 {
+				time.Sleep(time.Second * time.Duration(sleepTime))
+			} else {
+				return nil, fmt.Errorf("Timeout on deployment")
+			}
+		}
 	}
 
 	//Return response
