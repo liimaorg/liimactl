@@ -2,7 +2,6 @@ package client
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -123,7 +122,8 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 			}
 
 			if len(deployments) == 0 {
-				return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment get")
+				log.Println("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
+				return nil, err
 			}
 
 			createdDeployments = deployments
@@ -142,7 +142,8 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 			if i < maxCounts-1 {
 				time.Sleep(time.Second * time.Duration(sleepTime))
 			} else {
-				return nil, fmt.Errorf("Timeout on deployment")
+				log.Println("Timeout on promote deployment on environment: ", commandOptions.FromEnvironment)
+				return nil, err
 			}
 		}
 	}
