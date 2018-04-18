@@ -76,6 +76,7 @@ func TestNewDeploymentCreateCmd(t *testing.T) {
 		{"Test2", []string{"promote", "--environment=Y", "--fromEnvironment=B", "--date=2018-02-01 17:00", "--silent"}, "------\nSUCCESS\n"},
 		{"Test3", []string{"promote", "--environment=Y", "--fromEnvironment=B", "--date=2018-02-01 17:00", "-c", "--blacklistAppServer=Test"}, ""},
 		{"Test4", []string{"promote", "--environment=Y", "--fromEnvironment=B", "--date=2018-02-01 17:00", "-c", "--blacklistAppServer=Test2", "--whitelistAppServer=Test"}, "------\nSUCCESS\n"},
+		{"Test5", []string{"promote", "--environment=Y", "--fromEnvironment=B", "--date=2018-02-01 17:00", "-c", "--wait"}, "------\nTest success\ntestapp 1.0\n"},
 	}
 
 	//Init config

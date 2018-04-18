@@ -2,7 +2,9 @@ package client
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"math"
 	"strings"
 	"time"
 
@@ -39,6 +41,48 @@ func (commandOption *CommandOptionsPromoteDeployments) validate() error {
 	return nil
 }
 
+//checkDeploymentResults checks the result of the given deployments
+func checkDeploymentResults(cli *Cli, commandOptionsGet *CommandOptionsGetDeployment, maxWaitTime int) (Deployments, error) {
+
+	checkedDeployments := Deployments{}
+
+	const sleepTime = 60 //seconds, polling each x seconds
+	//Timeout 10min = 600sec / 60sec = 10 counts
+	maxCounts := int(math.Max(1, float64(maxWaitTime/sleepTime)))
+	for i := 0; i <= maxCounts; i++ {
+
+		deployments, err := GetDeployment(cli, commandOptionsGet)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(deployments) == 0 {
+			return nil, fmt.Errorf("There was an error on checking the deplyoments, no deployment found")
+		}
+
+		checkedDeployments = deployments
+
+		// Check if all deployments are finished
+		allfinished := true
+		for _, actDeployment := range deployments {
+			log.Printf("AppServer: %-30s State: %-20s\n", actDeployment.AppServerName, actDeployment.State)
+			allfinished = allfinished && (actDeployment.State == DeploymentStateFailed || actDeployment.State == DeploymentStateSuccess)
+		}
+		// Break loop if finished
+		if allfinished {
+			break
+		}
+		//Check iterations, sleep or timeout
+		if i < maxCounts {
+			time.Sleep(time.Second * time.Duration(sleepTime))
+		} else {
+			return checkedDeployments, fmt.Errorf("Timeout on checking deployment results")
+		}
+	}
+
+	return checkedDeployments, nil
+}
+
 //PromoteDeployments creates multiple deployments and returns the deploymentresponse
 func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeployments) (Deployments, error) {
 	//validate commandoptions
@@ -58,12 +102,11 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 	deployments, err := GetDeployment(cli, &commandOptionsGetFilter)
 	if err != nil {
 		log.Println("Error on getting the filtered deployments: ", err)
-		return nil, err
+		return deployments, err
 	}
 
 	if len(deployments) == 0 {
-		log.Println("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
-		return nil, err
+		return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment found from environment: %s ", commandOptions.FromEnvironment)
 	}
 
 	//Remove all deployments
@@ -95,57 +138,27 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 
 		deployment, err := CreateDeployment(cli, &commandOptionsCreateDeployment)
 		if err != nil {
-			log.Println("Error Create Deployment: ", err)
+			log.Printf("Error Create Deployment for app server: %s error: %s", actDeployment.AppServerName, err)
 			return createdDeployments, err
 		}
 		createdDeployments = append(createdDeployments, *deployment)
 	}
 
 	//Wait on deplyoment success or failed
-	sleepTime := 60 //seconds, polling each x seconds
-	if commandOptions.Wait && commandOptions.MaxWaitTime > sleepTime {
+	if commandOptions.Wait {
 
-		commandOptionsGet := CommandOptionsGetDeployment{}
-		commandOptionsGet.Environment = []string{commandOptions.Environment}
-		commandOptionsGet.OnlyLatest = true
-		commandOptionsGet.TrackingID = -1
+		//Create filter for created deplyoments
+		commandOptionsGetFilter.Environment = []string{commandOptions.Environment}
+		commandOptionsGetFilter.AppServer = nil
 		for _, actDeployment := range createdDeployments {
-			commandOptionsGet.AppServer = append(commandOptionsGet.AppServer, actDeployment.AppServerName)
+			commandOptionsGetFilter.AppServer = append(commandOptionsGetFilter.AppServer, actDeployment.AppServerName)
 		}
-
-		//Timeout 10min = 600sec / 30sec = 20 counts
-		maxCounts := commandOptions.MaxWaitTime / sleepTime
-		for i := 0; i < maxCounts; i++ {
-			deployments, err := GetDeployment(cli, &commandOptionsGet)
-			if err != nil {
-				return nil, err
-			}
-
-			if len(deployments) == 0 {
-				log.Println("There was an error on creating the deplyoment, no deployment found from environment: ", commandOptions.FromEnvironment)
-				return nil, err
-			}
-
-			createdDeployments = deployments
-
-			// Check if all deployments are finished
-			allfinished := true
-			for _, actDeployment := range deployments {
-				log.Printf("AppServer: %-30s State: %-20s\n", actDeployment.AppServerName, actDeployment.State)
-				allfinished = allfinished && (actDeployment.State == DeploymentStateFailed || actDeployment.State == DeploymentStateSuccess)
-			}
-			// Break loop if finished
-			if allfinished {
-				break
-			}
-
-			if i < maxCounts-1 {
-				time.Sleep(time.Second * time.Duration(sleepTime))
-			} else {
-				log.Println("Timeout on promote deployment on environment: ", commandOptions.FromEnvironment)
-				return nil, err
-			}
+		//Check deployments
+		deployments, err := checkDeploymentResults(cli, &commandOptionsGetFilter, commandOptions.MaxWaitTime)
+		if err != nil {
+			return deployments, err
 		}
+		createdDeployments = deployments
 	}
 
 	//Return response
