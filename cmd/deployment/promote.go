@@ -61,17 +61,22 @@ func runPromote(cmd *cobra.Command, cli *client.Cli, args []string) {
 		if err != nil {
 			log.Fatal("Error Promote Deployment: ", err)
 		}
+		success := true
 
 		for _, deployment := range deplyoments {
 
 			//Print result
 			PrintDeployment(cmd, &deployment)
 
-			//Write error failed -> return code = 1 with log.Fatal
-			if deployment.State == client.DeploymentStateFailed {
-				log.Fatal("Deployment failed with state: ", deployment.State)
-			}
+			//Check success
+			success = success && (deployment.State == client.DeploymentStateSuccess)
 
 		}
+
+		//Write failed, if not all deployments are successfully -> return code = 1 with log.Fatal, needed maybe for the result in a batch job
+		if !success {
+			log.Fatal("Promote failed, not all deployments are successfully")
+		}
+
 	}
 }
