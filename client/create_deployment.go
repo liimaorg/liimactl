@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -179,7 +180,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 				return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment get")
 			}
 
-			fmt.Println("State: ", deployments[0].State)
+			log.Printf("AppServer: %-30s State: %-20s\n", deployments[0].AppServerName, deployments[0].State)
 
 			deploymentResponse = &deployments[0]
 			if deployments[0].State == DeploymentStateFailed || deployments[0].State == DeploymentStateSuccess {

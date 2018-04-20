@@ -61,7 +61,7 @@ func listDeploymentHandler(w http.ResponseWriter, r *http.Request) {
 
 		//Create  response
 		response := Deployments{{}}
-		response[0].State = "SUCCESS"
+		response[0].State = DeploymentStateSuccess
 
 		//Send response
 		deployment, err := json.Marshal(response[0])

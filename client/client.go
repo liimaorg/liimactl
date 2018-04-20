@@ -170,11 +170,15 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 
 	// Dump response
 	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Print("Response Body Error on request: ", reqURL)
+	//Check on error
+	if err != nil || !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
+		log.Print("Response Error on request: ", reqURL)
 		log.Print("response Status:", resp.Status)
 		log.Print("response Headers:", resp.Header)
-		return err
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf(resp.Status)
 	}
 
 	//Unmarshal json respond to responseType
