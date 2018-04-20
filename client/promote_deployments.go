@@ -41,7 +41,7 @@ func (commandOption *CommandOptionsPromoteDeployments) validate() error {
 	return nil
 }
 
-//checkDeploymentResults checks the result of the given deployments
+//checkDeploymentResults waits for deployments to finish or maxWaitTime is reached
 func checkDeploymentResults(cli *Cli, commandOptionsGet *CommandOptionsGetDeployment, maxWaitTime int) (Deployments, error) {
 
 	checkedDeployments := Deployments{}
