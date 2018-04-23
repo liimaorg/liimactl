@@ -151,7 +151,7 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 		commandOptionsGetFilter.Environment = []string{commandOptions.Environment}
 		commandOptionsGetFilter.AppServer = nil
 		for _, actDeployment := range createdDeployments {
-			commandOptionsGetFilter.AppServer = append(commandOptionsGetFilter.AppServer, actDeployment.AppServerName)
+			commandOptionsGetFilter.ID = append(commandOptionsGetFilter.ID, actDeployment.ID)
 		}
 		//Check deployments
 		deployments, err := checkDeploymentResults(cli, &commandOptionsGetFilter, commandOptions.MaxWaitTime)

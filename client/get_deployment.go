@@ -55,6 +55,7 @@ type CommandOptionsGetDeployment struct {
 	TrackingID      int               `json:"trackingId"`
 	OnlyLatest      bool              `json:"onlyLatest"`
 	Filter          []DeploymentFilter
+	ID              []int //deployment id
 }
 
 // DeploymentFilter is a Liima deployment filter
@@ -136,6 +137,9 @@ func buildFilterFromOptions(commandOptions *CommandOptionsGetDeployment) []Deplo
 	}
 	for _, val := range commandOptions.Environment {
 		filters = append(filters, createEqFilter("Environment", val))
+	}
+	for _, val := range commandOptions.ID {
+		filters = append(filters, createEqFilter("Id", val))
 	}
 	// ignore defaults form cmd
 	if commandOptions.OnlyLatest != false {

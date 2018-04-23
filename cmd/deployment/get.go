@@ -45,6 +45,7 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&commandOptionsGet.Environment, "environment", "e", []string{}, "Environment Filter")
 	cmd.Flags().BoolVarP(&commandOptionsGet.OnlyLatest, "onlyLatest", "l", false, "Only Latest Filter")
 	cmd.Flags().IntVarP(&commandOptionsGet.TrackingID, "trackingId", "t", -1, "Tracking ID")
+	cmd.Flags().IntSliceVarP(&commandOptionsGet.ID, "id", "i", []int{}, "Deployment ID")
 	cmd.Flags().StringVarP(&deploymentFilter, "filter", "f", "", "Deployment filter in JSON")
 
 	return cmd
