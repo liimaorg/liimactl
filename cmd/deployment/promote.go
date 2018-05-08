@@ -3,6 +3,8 @@ package deployment
 import (
 	"fmt"
 	"log"
+	"sort"
+	"strings"
 
 	"github.com/liimaorg/liimactl/client"
 	"github.com/spf13/cobra"
@@ -13,7 +15,7 @@ var (
 	deploymentPromoteLong = `	Promote deployment on an environemt with the use of specific properties.`
 
 	//Example command description
-	deploymentPromoteExample = `	# Promote multiple deplyoments on an environment with specific properties. 
+	deploymentPromoteExample = `	# Promote multiple deployments on an environment with specific properties. 
 	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B
 	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistRuntime="Kubernetes,Kube_helm"
 	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistAppServer="aps_bau_kube,vvn"
@@ -36,11 +38,11 @@ func newPromoteCommand(cli *client.Cli) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&commandOptionsPromote.Environment, "environment", "e", "", "Environment")
-	cmd.Flags().StringVarP(&commandOptionsPromote.FromEnvironment, "fromEnvironment", "f", "", "Deploy last deplyoment from given environment")
+	cmd.Flags().StringVarP(&commandOptionsPromote.FromEnvironment, "fromEnvironment", "f", "", "Deploy last deployment from given environment")
 	cmd.Flags().StringVarP(&commandOptionsPromote.DeploymentDate, "date", "d", "", "Deployment Date 'DD.MM.YYYY hh:mm' ")
-	cmd.Flags().BoolVarP(&commandOptionsPromote.ExecuteShakedownTest, "executeShakeDownTest", "s", false, "Run Shakedowntest after the deplyoment")
-	cmd.Flags().BoolVarP(&commandOptionsPromote.Wait, "wait", "w", false, "Wait maxWaitTime until the deplyoment success or failed")
-	cmd.Flags().IntVarP(&commandOptionsPromote.MaxWaitTime, "maxWaitTime", "t", 600, "Max Wait time [seconds] until the deplyoment success or failed")
+	cmd.Flags().BoolVarP(&commandOptionsPromote.ExecuteShakedownTest, "executeShakeDownTest", "s", false, "Run Shakedowntest after the deployment")
+	cmd.Flags().BoolVarP(&commandOptionsPromote.Wait, "wait", "w", false, "Wait maxWaitTime until the deployment success or failed")
+	cmd.Flags().IntVarP(&commandOptionsPromote.MaxWaitTime, "maxWaitTime", "t", 600, "Max Wait time [seconds] until the deployment success or failed")
 	cmd.Flags().StringSliceVarP(&commandOptionsPromote.WhitelistAppServer, "whitelistAppServer", "a", []string{}, "Whitelist with all appServer, which should be deployed, if no WhitelistAppServer is defined, the whole environment will deployed (exclusive blacklist)")
 	cmd.Flags().StringSliceVarP(&commandOptionsPromote.BlacklistAppServer, "blacklistAppServer", "b", []string{}, "Blacklist with all appServer, which should not be deployed")
 	cmd.Flags().StringSliceVarP(&commandOptionsPromote.BlacklistRuntime, "blacklistRuntime", "r", []string{}, "Blacklist with all runtimes, which should not be deployed")
@@ -56,20 +58,31 @@ func runPromote(cmd *cobra.Command, cli *client.Cli, args []string) {
 	msg := fmt.Sprintf("Do you really want to start deployments on environment: %s", commandOptionsPromote.Environment)
 	if commandOptionsPromote.Silent || AskYesNo(msg) {
 
-		//Promote deplyoment
-		deplyoments, err := client.PromoteDeployments(cli, &commandOptionsPromote)
+		//Promote deployment
+		deployments, err := client.PromoteDeployments(cli, &commandOptionsPromote)
 		if err != nil {
 			log.Fatal("Error Promote Deployment: ", err)
 		}
 		success := true
 
-		for _, deployment := range deplyoments {
+		//Sort, group be State
+		sort.Sort(deployments)
+		sort.Slice(deployments, func(i, j int) bool {
+			switch strings.Compare(string(deployments[i].State), string(deployments[j].State)) {
+			case -1:
+				return true
+			case 1:
+				return false
+			}
+			return deployments[i].AppServerName < deployments[j].AppServerName
+		})
+		for _, deployment := range deployments {
 
 			//Print result
 			PrintDeployment(cmd, &deployment)
 
 			//Check success
-			success = success && (deployment.State == client.DeploymentStateSuccess)
+			success = success && (deployment.State == client.DeploymentStateSuccess || deployment.State == client.DeploymentStateRejected)
 
 		}
 

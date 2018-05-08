@@ -30,8 +30,8 @@ type deploymentParameters struct {
 	Key   string `json:"key"`
 }
 
-//DeplyomentRequest type
-type DeplyomentRequest struct {
+//DeploymentRequest type
+type DeploymentRequest struct {
 	ReleaseName          *string                `json:"releaseName"`
 	AppServerName        string                 `json:"appServerName"`
 	EnvironmentName      string                 `json:"environmentName"`
@@ -58,9 +58,9 @@ type CommandOptionsCreateDeployment struct {
 	ExecuteShakedownTest bool     `json:"executeShakedownTest"`
 	Key                  []string `json:"key"`
 	Value                []string `json:"value"`
-	Wait                 bool     //Wait as long the WaitTime until the deplyoment success or failed
-	MaxWaitTime          int      //Max wait time [seconds] until the deplyoment success or failed
-	FromEnvironment      string   //Deploy last deplyoment from given environment
+	Wait                 bool     //Wait as long the WaitTime until the deployment success or failed
+	MaxWaitTime          int      //Max wait time [seconds] until the deployment success or failed
+	FromEnvironment      string   //Deploy last deployment from given environment
 }
 
 //Validate the given command options
@@ -98,7 +98,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	url := fmt.Sprintf("resources/./deployments")
 
 	//Create request (body)
-	deploymentRequest := DeplyomentRequest{}
+	deploymentRequest := DeploymentRequest{}
 	deploymentRequest.AppServerName = commandOptions.AppServer
 	deploymentRequest.EnvironmentName = commandOptions.Environment
 	deploymentRequest.ExecuteShakedownTest = commandOptions.ExecuteShakedownTest
@@ -126,7 +126,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 			return nil, err
 		}
 		if len(deployments) == 0 {
-			return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment found from environment: %s", commandOptions.FromEnvironment)
+			return nil, fmt.Errorf("There was an error on creating the deployment, no deployment found from environment: %s", commandOptions.FromEnvironment)
 		}
 		lastDeployment := deployments[0]
 		//Set app and version
@@ -159,10 +159,21 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	//Call rest client
 	deploymentResponse := &DeploymentResponse{}
 	if err := cli.Client.DoRequest(http.MethodPost, url, &deploymentRequest, &deploymentResponse); err != nil {
+
+		//ToDo: addapt on liima response after fixing (http.StatusBadRequest)
+		//Error response if node active=false in liima appserver configuration
+		if err.Error() == "400 Bad Request" {
+			deploymentResponse.AppServerName = deploymentRequest.AppServerName
+			deploymentResponse.State = DeploymentStateRejected
+			deploymentResponse.ID = -1
+			log.Println("Node not active on: ", deploymentRequest.AppServerName)
+			err = nil
+		}
+
 		return deploymentResponse, err
 	}
 
-	//Wait on deplyoment success or failed
+	//Wait on deployment success or failed
 	if commandOptions.Wait && commandOptions.MaxWaitTime > 5 {
 		commandOptionsGet := CommandOptionsGetDeployment{
 			TrackingID: deploymentResponse.TrackingID,
@@ -177,7 +188,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 			}
 
 			if len(deployments) != 1 {
-				return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment get")
+				return nil, fmt.Errorf("There was an error on creating the deployment, no deployment get")
 			}
 
 			log.Printf("AppServer: %-30s State: %-20s\n", deployments[0].AppServerName, deployments[0].State)

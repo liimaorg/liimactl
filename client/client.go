@@ -172,9 +172,14 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	data, err := ioutil.ReadAll(resp.Body)
 	//Check on error
 	if err != nil || !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
-		log.Print("Response Error on request: ", reqURL)
-		log.Print("response Status:", resp.Status)
-		log.Print("response Headers:", resp.Header)
+
+		//ToDo: addapt on liima response after fixing (http.StatusBadRequest)
+		//Error response if node active=false in liima appserver configuration
+		if resp.StatusCode != http.StatusBadRequest {
+			log.Print("Response Error on request: ", reqURL)
+			log.Print("response Status:", resp.Status)
+			log.Print("response Headers:", resp.Header)
+		}
 		if err != nil {
 			return err
 		}
