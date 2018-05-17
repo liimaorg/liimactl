@@ -81,7 +81,7 @@ const (
 // DeploymentState is the state of a Liima deployment
 type DeploymentState string
 
-//Enumeration of deplyoment state
+//Enumeration of deployment state
 const (
 	DeploymentStateSuccess        DeploymentState = "success"
 	DeploymentStateFailed         DeploymentState = "failed"

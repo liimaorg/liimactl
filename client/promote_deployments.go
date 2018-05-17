@@ -16,9 +16,9 @@ type CommandOptionsPromoteDeployments struct {
 	Environment          string   `json:"environmentName"`
 	DeploymentDate       string   `json:"deploymentDate"`
 	ExecuteShakedownTest bool     `json:"executeShakedownTest"`
-	Wait                 bool     //Wait as long the WaitTime until the deplyoment success or failed
-	MaxWaitTime          int      //Max wait time [seconds] until the deplyoment success or failed
-	FromEnvironment      string   //Deploy last deplyoment from given environment
+	Wait                 bool     //Wait as long the WaitTime until the deployment success or failed
+	MaxWaitTime          int      //Max wait time [seconds] until the deployment success or failed
+	FromEnvironment      string   //Deploy last deployment from given environment
 	WhitelistAppServer   []string //Whitelist with all appServer, which should be deployed, if not WhitelistAppServer is defined, the whole environment will deployed (exclusive blacklist)
 	BlacklistAppServer   []string //Blacklist with all appServer, which should not be deployed
 	BlacklistRuntime     []string //Blacklist with all runtimes, which should not be deployed
@@ -57,7 +57,7 @@ func checkDeploymentResults(cli *Cli, commandOptionsGet *CommandOptionsGetDeploy
 		}
 
 		if len(deployments) == 0 {
-			return nil, fmt.Errorf("There was an error on checking the deplyoments, no deployment found")
+			log.Println("Checking the deployment: no deployment found")
 		}
 
 		checkedDeployments = deployments
@@ -91,10 +91,11 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 		return nil, err
 	}
 
-	//Create the filter for searching all deplyoments from an environment
+	//Create the filter for searching all deployment from an environment
 	commandOptionsGetFilter := CommandOptionsGetDeployment{}
 	commandOptionsGetFilter.Environment = []string{commandOptions.FromEnvironment}
 	commandOptionsGetFilter.OnlyLatest = true
+	commandOptionsGetFilter.DeploymentState = []DeploymentState{DeploymentStateSuccess}
 	commandOptionsGetFilter.TrackingID = -1
 	commandOptionsGetFilter.AppServer = commandOptions.WhitelistAppServer
 
@@ -106,7 +107,7 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 	}
 
 	if len(deployments) == 0 {
-		return nil, fmt.Errorf("There was an error on creating the deplyoment, no deployment found from environment: %s ", commandOptions.FromEnvironment)
+		return nil, fmt.Errorf("There was an error on creating the deployment, no deployment found from environment: %s ", commandOptions.FromEnvironment)
 	}
 
 	//Remove all deployments
@@ -144,21 +145,35 @@ func PromoteDeployments(cli *Cli, commandOptions *CommandOptionsPromoteDeploymen
 		createdDeployments = append(createdDeployments, *deployment)
 	}
 
-	//Wait on deplyoment success or failed
+	//Wait on deployment success or failed
 	if commandOptions.Wait {
 
-		//Create filter for created deplyoments
+		//List with node active=false in liima appserver configuration
+		nodeNotActiveList := Deployments{}
+
+		//Create filter for created deployments
 		commandOptionsGetFilter.Environment = []string{commandOptions.Environment}
 		commandOptionsGetFilter.AppServer = nil
+		commandOptionsGetFilter.DeploymentState = nil
+		commandOptionsGetFilter.OnlyLatest = false
 		for _, actDeployment := range createdDeployments {
+			if actDeployment.ID == -1 {
+				nodeNotActiveList = append(nodeNotActiveList, actDeployment)
+			}
 			commandOptionsGetFilter.ID = append(commandOptionsGetFilter.ID, actDeployment.ID)
 		}
+
 		//Check deployments
 		deployments, err := checkDeploymentResults(cli, &commandOptionsGetFilter, commandOptions.MaxWaitTime)
 		if err != nil {
 			return deployments, err
 		}
 		createdDeployments = deployments
+
+		//Add not active node to responselist
+		for _, nodeNotActive := range nodeNotActiveList {
+			createdDeployments = append(createdDeployments, nodeNotActive)
+		}
 	}
 
 	//Return response

@@ -14,7 +14,7 @@ var (
 	deploymentGetLong = `	Get deployment with the use of specific filters.`
 
 	//Example command description
-	deploymentGetExample = `	# Get a deplyoment with specific filters. 
+	deploymentGetExample = `	# Get a deployment with specific filters. 
 	liimactl.exe deployment get --appServer=test_application --environment=I
 	# Filters can also be passed as JSON
 	liimactl.exe deployment get --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Application server","comp":"eq","val":"liima"}]'
@@ -41,7 +41,7 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 	deploymentState = &[]string{}
 	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppName, "appName", "n", []string{}, "Application Name")
 	cmd.Flags().StringSliceVarP(&commandOptionsGet.AppServer, "appServer", "a", []string{}, "Application Server Name")
-	cmd.Flags().StringSliceVarP(deploymentState, "deploymentState", "d", []string{}, "Deplyoment State")
+	cmd.Flags().StringSliceVarP(deploymentState, "deploymentState", "d", []string{}, "deployment State")
 	cmd.Flags().StringSliceVarP(&commandOptionsGet.Environment, "environment", "e", []string{}, "Environment Filter")
 	cmd.Flags().BoolVarP(&commandOptionsGet.OnlyLatest, "onlyLatest", "l", false, "Only Latest Filter")
 	cmd.Flags().IntVarP(&commandOptionsGet.TrackingID, "trackingId", "t", -1, "Tracking ID")
@@ -51,7 +51,7 @@ func newGetCommand(cli *client.Cli) *cobra.Command {
 	return cmd
 }
 
-//Get the deployments properties given by the arguments (see type Deplyoments) and print it on the console
+//Get the deployments properties given by the arguments (see type Deployments) and print it on the console
 func runGet(cmd *cobra.Command, cli *client.Cli, args []string) {
 	// convert to client types
 	for _, state := range *deploymentState {
