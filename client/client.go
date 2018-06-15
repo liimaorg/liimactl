@@ -173,17 +173,17 @@ func (c *Client) DoRequest(method string, url string, bodyType interface{}, resp
 	//Check on error
 	if err != nil || !(resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices) {
 
-		//ToDo: addapt on liima response after fixing (http.StatusBadRequest)
 		//Error response if node active=false in liima appserver configuration
-		if resp.StatusCode != http.StatusBadRequest {
+		if resp.StatusCode != http.StatusFailedDependency {
 			log.Print("Response Error on request: ", reqURL)
 			log.Print("response Status:", resp.Status)
 			log.Print("response Headers:", resp.Header)
+			log.Print("response Body:", string(data))
 		}
 		if err != nil {
 			return err
 		}
-		return fmt.Errorf(resp.Status)
+		return fmt.Errorf(resp.Status + " : " + string(data))
 	}
 
 	//Unmarshal json respond to responseType
