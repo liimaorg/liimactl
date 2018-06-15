@@ -160,13 +160,12 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 	deploymentResponse := &DeploymentResponse{}
 	if err := cli.Client.DoRequest(http.MethodPost, url, &deploymentRequest, &deploymentResponse); err != nil {
 
-		//ToDo: addapt on liima response after fixing (http.StatusBadRequest)
-		//Error response if node active=false in liima appserver configuration
-		if err.Error() == "400 Bad Request" {
+		//Error response "Failed dependency" -> example: node active=false in liima appserver configuration
+		if strings.HasPrefix(err.Error(), "424 Failed Dependency") {
 			deploymentResponse.AppServerName = deploymentRequest.AppServerName
 			deploymentResponse.State = DeploymentStateRejected
 			deploymentResponse.ID = -1
-			log.Println("Node not active on: ", deploymentRequest.AppServerName)
+			log.Println(err.Error(), deploymentRequest.AppServerName)
 			err = nil
 		}
 
