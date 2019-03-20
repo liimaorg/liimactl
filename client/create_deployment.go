@@ -120,6 +120,7 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 		commandOptionsGet.AppServer = []string{commandOptions.AppServer}
 		commandOptionsGet.TrackingID = -1
 		commandOptionsGet.OnlyLatest = true
+		commandOptionsGet.DeploymentState = []DeploymentState{DeploymentStateSuccess}
 		//Get last deployment
 		deployments, err := GetDeployment(cli, &commandOptionsGet)
 		if err != nil {
@@ -136,6 +137,10 @@ func CreateDeployment(cli *Cli, commandOptions *CommandOptionsCreateDeployment) 
 				Version:         lastDeployment.AppsWithVersion[i].Version,
 			}
 			deploymentRequest.AppsWithVersion = append(deploymentRequest.AppsWithVersion, appVersion)
+		}
+		//Set release from last deployment if not defined
+		if deploymentRequest.ReleaseName == nil {
+			deploymentRequest.ReleaseName = &lastDeployment.ReleaseName
 		}
 	} else {
 		//Application and version

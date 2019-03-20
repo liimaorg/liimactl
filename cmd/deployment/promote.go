@@ -87,7 +87,7 @@ func runPromote(cmd *cobra.Command, cli *client.Cli, args []string) {
 		}
 
 		//Write failed, if not all deployments are successfully -> return code = 1 with log.Fatal, needed maybe for the result in a batch job
-		if !success {
+		if !success && commandOptionsPromote.Wait {
 			log.Fatal("Promote failed, not all deployments are successfully")
 		}
 
