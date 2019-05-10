@@ -109,8 +109,7 @@ func newTLSClientConfig(config *Config) (*tls.Config, error) {
 		Certificates:       certs,
 		RootCAs:            caCertPool,
 		InsecureSkipVerify: config.InsecureSkipVerify,
-		MinVersion:         tls.VersionTLS12,
-		Renegotiation:      tls.RenegotiateFreelyAsClient,
+		Renegotiation:      config.TlsRenegotiation,
 	}
 	tlsConfig.BuildNameToCertificate()
 
