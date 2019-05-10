@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 )
@@ -29,6 +30,8 @@ type TLSClientConfig struct {
 	// InsecureSkipVerify controls whether a client verifies the
 	// server's certificate chain and host name.
 	InsecureSkipVerify bool
+	// TLS renegotiation support. Default is NEVER.
+	TlsRenegotiation tls.RenegotiationSupport
 }
 
 // Validate the configuration
