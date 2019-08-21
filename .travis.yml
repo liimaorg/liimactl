@@ -22,3 +22,7 @@ deploy:
   on:
     tags: true
     repo: liimaorg/liimactl
+branches:
+  only:
+  - master
+  - /^v0.*$/
