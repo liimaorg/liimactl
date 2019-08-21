@@ -37,6 +37,16 @@ func NewMockClient(config *Config) (*Client, error) {
 	}, nil
 }
 
+// Creates a new Liima client with mocked http.Client
+func NewMockClientWithCustomHttpClient(client *http.Client) *Client {
+	var config = Config{Username: "", Password: "", Host: ""}
+	return &Client{
+		client: client,
+		config: &config,
+		url:    "",
+	}
+}
+
 //Mux Http handlers
 func serverMuxHandler() *http.ServeMux {
 	r := http.NewServeMux()
