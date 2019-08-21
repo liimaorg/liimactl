@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -89,6 +90,11 @@ func initConfig(flags *pflag.FlagSet) (*client.Config, error) {
 	err = viper.Unmarshal(&config)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode into config, %v", err)
+	}
+
+	//Set TlsRenegotiation FreelyAsClient if not set
+	if viper.Get("TLSClientConfig.TlsRenegotiation") == nil {
+		config.TlsRenegotiation = tls.RenegotiateFreelyAsClient
 	}
 
 	return &config, nil
