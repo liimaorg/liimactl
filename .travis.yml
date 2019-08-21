@@ -5,7 +5,7 @@ env:
   global:
   - DOCKER_CMD="docker run -it --rm -v $PWD:/go/src/github.com/liimaorg/liimactl -w
     /go/src/github.com/liimaorg/liimactl"
-  - DOCKER_IMG="golang:1.9-alpine"
+  - DOCKER_IMG="golang:alpine"
 install:
 - "$DOCKER_CMD -e GOOS=linux   -e GOARCH=amd64 -e CGO_ENABLED=0 $DOCKER_IMG sh -c
   'go build -o out/liimactl-$GOOS-$GOARCH'"
