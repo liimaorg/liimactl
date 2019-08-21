@@ -6,9 +6,9 @@ env:
   - DOCKER_CMD="docker run -it --rm -v $PWD:/go/src/github.com/liimaorg/liimactl -w
     /go/src/github.com/liimaorg/liimactl"
   - DOCKER_IMG="golang:alpine"
+  - CGO_ENABLED=0
 install:
-- "$DOCKER_CMD -e GOOS=linux   -e GOARCH=amd64 -e CGO_ENABLED=0 $DOCKER_IMG sh -c
-  'go build -o out/liimactl-$GOOS-$GOARCH'"
+- "$DOCKER_CMD -e GOOS=linux   -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH'"
 - "$DOCKER_CMD -e GOOS=windows -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH.exe'"
 - "$DOCKER_CMD -e GOOS=darwin  -e GOARCH=amd64 $DOCKER_IMG sh -c 'go build -o out/liimactl-$GOOS-$GOARCH'"
 script:
