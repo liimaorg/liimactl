@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/liimaorg/liimactl.svg?branch=master)](https://travis-ci.org/liimaorg/liimactl)
+![Build Status](https://github.com/liimaorg/liimactl/workflows/test/badge.svg)
 
 # Install
 
