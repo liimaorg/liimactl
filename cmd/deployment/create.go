@@ -13,9 +13,9 @@ var (
 
 	//Example command description
 	deploymentCreateExample = `	# Create a deployment with specific properties. 
-	liimactl.exe deployment create --appServer=test_application --appName=ch_mobi_app1 --version="1.0.0" --appName=ch_mobi_app2 --version="1.0.1" --environment=I
-	liimactl.exe deployment create --appServer=aps_bau --appName=ch_mobi_aps_bau --version="1.0.32" --environment=W --date="2018-02-01 16:00"
-	liimactl.exe deployment create --appServer=generic_test --appName=ch_mobi_generic_test --version="1.0.1" --environment=U --wait`
+	liimactl deployment create --appServer=test_application --appName=ch_mobi_app1 --version="1.0.0" --appName=ch_mobi_app2 --version="1.0.1" --environment=I
+	liimactl deployment create --appServer=aps_bau --appName=ch_mobi_aps_bau --version="1.0.32" --environment=W --date="2018-02-01 16:00"
+	liimactl deployment create --appServer=generic_test --appName=ch_mobi_generic_test --version="1.0.1" --environment=U --wait`
 
 	//Flags of the command
 	commandOptionsCreate client.CommandOptionsCreateDeployment

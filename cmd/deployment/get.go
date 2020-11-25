@@ -15,10 +15,10 @@ var (
 
 	//Example command description
 	deploymentGetExample = `	# Get a deployment with specific filters. 
-	liimactl.exe deployment get --appServer=test_application --environment=I
+	liimactl deployment get --appServer=test_application --environment=I
 	# Filters can also be passed as JSON
-	liimactl.exe deployment get --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Application server","comp":"eq","val":"liima"}]'
-	liimactl.exe deployment get --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Latest deployment job for App Server and Env","comp":"eq","val":"true"}]'
+	liimactl deployment get --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Application server","comp":"eq","val":"liima"}]'
+	liimactl deployment get --filter='[{"name":"Environment","comp":"eq","val":"Y"},{"name":"Latest deployment job for App Server and Env","comp":"eq","val":"true"}]'
 	`
 	//Flags of the command
 	commandOptionsGet client.CommandOptionsGetDeployment
