@@ -3,12 +3,6 @@
 # Install
 
 ```
-# Install dep tool
-go get -u github.com/golang/dep/cmd/dep
-
-# Install dependencies
-dep ensure
-
 go install
 ```
 
