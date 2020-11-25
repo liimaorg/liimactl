@@ -1,14 +1,8 @@
-[![Build Status](https://travis-ci.org/liimaorg/liimactl.svg?branch=master)](https://travis-ci.org/liimaorg/liimactl)
+![Build Status](https://github.com/liimaorg/liimactl/workflows/test/badge.svg)
 
 # Install
 
 ```
-# Install dep tool
-go get -u github.com/golang/dep/cmd/dep
-
-# Install dependencies
-dep ensure
-
 go install
 ```
 

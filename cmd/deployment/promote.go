@@ -16,10 +16,10 @@ var (
 
 	//Example command description
 	deploymentPromoteExample = `	# Promote multiple deployments on an environment with specific properties. 
-	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B
-	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistRuntime="Kubernetes,Kube_helm"
-	liimactl.exe deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistAppServer="aps_bau_kube,vvn"
-	liimactl.exe deployment promote --environment=Z  --fromEnvironment=I --whitelistAppServer="appServer1,appServer2" --wait --maxWaitTime=3600`
+	liimactl deployment promote --environment=Y  --fromEnvironment=B
+	liimactl deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistRuntime="Kubernetes,Kube_helm"
+	liimactl deployment promote --environment=Y  --fromEnvironment=B --date="2018-02-01 17:00" --blacklistAppServer="aps_bau_kube,vvn"
+	liimactl deployment promote --environment=Z  --fromEnvironment=I --whitelistAppServer="appServer1,appServer2" --wait --maxWaitTime=3600`
 
 	//Flags of the command
 	commandOptionsPromote client.CommandOptionsPromoteDeployments

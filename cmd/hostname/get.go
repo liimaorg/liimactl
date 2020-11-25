@@ -14,7 +14,7 @@ var (
 
 	//Example command description
 	hostnameExample = `	# Get a hostname with specific filter. 
-	liimactl.exe hostname get --appServer=test_application --environment=I`
+	liimactl hostname get --appServer=test_application --environment=I`
 
 	//Flags of the command
 	commandOptions client.CommandOptionsHostName
