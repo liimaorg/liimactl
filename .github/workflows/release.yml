@@ -24,7 +24,7 @@ jobs:
     - name: Build windows
       env:
         GOOS: windows
-      run: go build -o out/liimactl-$GOOS-$GOARCH
+      run: go build -o out/liimactl-$GOOS-$GOARCH.exe
     - name: Build darwin
       env:
         GOOS: darwin
